@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Building, Home, User, Mail, Phone, MapPin, Lock, Eye, EyeOff } from 'lucide-react';
+import API from '../services/api';
+import { useNavigate } from 'react-router-dom';
 
 const Registration = () => {
   const [formData, setFormData] = useState({
@@ -41,11 +43,20 @@ const Registration = () => {
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Registration submitted:', formData);
-    // Add your registration logic here
-  };
+  const navigate = useNavigate();
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  try {
+    const res = await API.post('/auth/register', formData);
+    console.log('Registration success', res.data);
+    alert('Registered successfully! Please login.');
+    navigate('/');  // Navigate to login page
+  } catch (err) {
+    console.error('Registration failed', err.response?.data);
+    alert(err.response?.data?.msg || 'Registration failed');
+  }
+};
 
   const userTypes = [
     { value: 'buyer', label: 'Property Buyer', icon: Home },

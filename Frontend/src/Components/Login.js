@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Lock, Mail, Eye, EyeOff, Building } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import API from '../services/api';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -8,11 +9,29 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Login Data:', { email, password });
-    // API call will be added later
+
+    try {
+      const response = await API.post('/auth/login', { email, password });
+      console.log('Login success:', response.data);
+
+      // Save token and role
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('role', response.data.role);
+
+      // Redirect based on role
+      if (response.data.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      console.error('Login failed:', error.response?.data);
+      alert(error.response?.data?.msg || 'Login failed');
+    }
   };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
