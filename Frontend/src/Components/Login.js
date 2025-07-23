@@ -13,7 +13,7 @@ const Login = () => {
     e.preventDefault();
 
     try {
-      const response = await API.post('/auth/login', { email, password });
+      const response = await API.post('/auth/login', { email, password});
       console.log('Login success:', response.data);
 
       // Save token and role

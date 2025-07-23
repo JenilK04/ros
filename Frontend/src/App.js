@@ -4,16 +4,26 @@ import Login from './Components/Login';
 import Dashboard from './Components/Dashboard';
 import Admin from './Components/Admin';
 import Registration from './Components/Registration';
-
+import Properties from './Components/Properties'
+import ProtectedAdmin from './Components/ProtectedAdmin';
 function App() {
   return (
     <div>
       <BrowserRouter>
         <Routes>    
           <Route path ="/" element={<Login/>}/> 
-          <Route path="/dashboard/" element={<Dashboard/>}/>
-          <Route path="/admin/" element={<Admin/>}/>
+      <Route path="/dashboard" element={<Dashboard />} />
+      
+      <Route
+        path="/admin"
+        element={
+          <ProtectedAdmin allowedRole="admin">
+            <Admin />
+          </ProtectedAdmin>
+        }
+      />
           <Route path="/registration/" element={<Registration/>}/>
+          <Route path="/properties" element={<Properties/>}/>
 
         </Routes>
       </BrowserRouter>

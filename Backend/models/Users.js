@@ -11,6 +11,7 @@ const userSchema = new mongoose.Schema({
   zip: String,
   country: String,
   password: String,
+  role:{type: String, default: 'user'},
   userType: { type: String, default: 'buyer' },
   companyName: String,
   licenseNumber: String,
