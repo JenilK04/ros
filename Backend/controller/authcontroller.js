@@ -58,7 +58,8 @@ const login = async (req, res) => {
     res.json({
       token,
       role: 'user',
-      userType: user.userType
+      userType: user.userType,
+      name: user.firstName+" "+user.lastName
     });
 
   } catch (err) {

@@ -3,7 +3,7 @@ import Navbar from './navbar';
 import { Settings, BarChart2, UserCog } from 'lucide-react';
 
 const Admin = () => {
-  const adminName =    'Admin';
+  const adminName = 'Admin';
 
   return (
     <>

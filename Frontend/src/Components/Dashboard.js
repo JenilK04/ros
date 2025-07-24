@@ -3,7 +3,7 @@ import Navbar from './navbar';
 import {Users, ClipboardCheck, Calendar, MessageCircle } from 'lucide-react';
 
 const Dashboard = () => {
-  const userName =  'User'; // Example: Replace with actual user data
+  const userName = localStorage.getItem('name') || 'User' 
 
   return (
     <>
