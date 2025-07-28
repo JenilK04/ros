@@ -20,6 +20,19 @@ const Login = () => {
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('role', response.data.role);
       localStorage.setItem('name',response.data.name)
+      localStorage.setItem('email',response.data.email)
+      localStorage.setItem('phone', response.data.phone);
+      localStorage.setItem('userType', response.data.userType);
+      localStorage.setItem('address', response.data.address);
+      localStorage.setItem('city', response.data.city);
+      localStorage.setItem('state', response.data.state);
+      localStorage.setItem('zip', response.data.zip);
+      localStorage.setItem('country', response.data.country);
+      localStorage.setItem('companyName', response.data.companyName);
+      localStorage.setItem('licenseNumber', response.data.licenseNumber);
+      localStorage.setItem('experience', response.data.experience);
+      localStorage.setItem('specialization', JSON.stringify(response.data.specialization));
+
 
       // Redirect based on role
       if (response.data.role === 'admin') {
@@ -40,8 +53,7 @@ const Login = () => {
         <div className="flex items-center space-x-2 mb-6">
           <Building className="h-8 w-8 text-blue-600" />
           <h2 className="text-2xl font-bold text-gray-900">ROS Login</h2>
-        </div>
-
+        </div> 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Email */}
           <div>
@@ -57,7 +69,7 @@ const Login = () => {
                 placeholder="you@example.com"
               />
             </div>
-          </div>
+          </div> 
 
           {/* Password */}
           <div>

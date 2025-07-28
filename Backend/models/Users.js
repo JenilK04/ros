@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema({
   city: String,
   state: String,
   zip: String,
-  country: String,
+  country: {type:String, default:'India'},
   password: String,
   role:{type: String, default: 'user'},
   userType: { type: String, default: 'buyer' },

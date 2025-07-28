@@ -6,6 +6,7 @@ import Admin from './Components/Admin';
 import Registration from './Components/Registration';
 import Properties from './Components/Properties'
 import ProtectedAdmin from './Components/ProtectedAdmin';
+import Profile from './Components/profile';
 function App() {
   return (
     <div>
@@ -24,6 +25,7 @@ function App() {
       />
           <Route path="/registration/" element={<Registration/>}/>
           <Route path="/properties" element={<Properties/>}/>
+          <Route path="/profile" element={<Profile/>}/>
 
         </Routes>
       </BrowserRouter>

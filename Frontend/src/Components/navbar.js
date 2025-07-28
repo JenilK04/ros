@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut } from 'lucide-react';
+import { LogOut,Building } from 'lucide-react';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -15,8 +15,10 @@ const Navbar = () => {
 
   return (
     <nav className="bg-blue-600 shadow p-4 flex justify-between items-center">
-      <div className="text-xl font-bold text-white">ROS Ecosystem</div>
-
+      <div className="flex items-center gap-2">
+          <Building className="text-white" />
+          <div className="text-xl font-bold text-white">ROS Ecosystem</div>
+      </div>
       <div className="flex items-center space-x-4">
         <a href="/dashboard"
           className="text-white hover:text-gray-300 font-medium"
@@ -35,6 +37,12 @@ const Navbar = () => {
             className="text-white hover:text-gray-300 font-medium"
           >
             Properties
+          </a>
+
+          <a href="/profile"
+            className="text-white hover:text-gray-300 font-medium"
+          >
+            Profile
           </a>
 
         <button

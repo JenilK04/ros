@@ -59,7 +59,18 @@ const login = async (req, res) => {
       token,
       role: 'user',
       userType: user.userType,
-      name: user.firstName+" "+user.lastName
+      name: user.firstName+" "+user.lastName,
+      phone: user.phone,
+      email: user.email,
+      address: user.address,
+      city: user.city,
+      zip: user.zip,
+      state: user.state,
+      country: user.country,
+      companyName: user.companyName,
+      licenseNumber: user.licenseNumber,
+      experience: user.experience,
+      specialization: user.specialization,
     });
 
   } catch (err) {
