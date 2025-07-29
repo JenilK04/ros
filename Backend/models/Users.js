@@ -16,7 +16,11 @@ const userSchema = new mongoose.Schema({
   companyName: String,
   licenseNumber: String,
   experience: String,
-  specialization: [String]
+  specialization: [String],
+  photo: {
+    type: String, // store base64 string here
+    contentType: String, // store MIME type (optional but useful)
+  }
 });
 
 const User = mongoose.model('User', userSchema);

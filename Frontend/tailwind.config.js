@@ -4,7 +4,8 @@ export default {
     "./src/Components/Dashboard.js",
     "./src/Components/Admin.js",
     "./src/Components/Registration.js",
-    "./src/Components/navbar.js"
+    "./src/Components/navbar.js",
+    "./src/Components/profile.js"
   ],
   theme: {
     extend: {},

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Navbar from './navbar';
 import {
   Mail,
@@ -26,7 +26,10 @@ const Profile = () => {
     companyName: localStorage.getItem('companyName') || '',
     licenseNumber: localStorage.getItem('licenseNumber') || '',
     experience: localStorage.getItem('experience') || '',
+    photo: localStorage.getItem('photo') || '',
   };
+
+  const [imageError, setImageError] = useState(false);
 
   return (
     <>
@@ -42,7 +45,25 @@ const Profile = () => {
         </div>
 
         {/* Profile Content */}
-        <section className="max-w-4xl mx-auto bg-white rounded-xl shadow-md border border-gray-200 p-8">
+        <section className="bg-white rounded-xl shadow-md border border-gray-200 p-8">
+
+          {/* Profile Image */}
+
+          <div className="flex justify-center mb-8">
+            {user.photo && !imageError ? (
+              <img
+                src={user.photo}
+                alt="Profile"
+                onError={() => setImageError(true)}
+                className="w-32 h-32 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-32 h-32 bg-gray-200 rounded-full flex items-center justify-center">
+                <User className="w-8 h-8 text-gray-500" />
+              </div>
+            )}
+          </div>
+
 
           {/* Basic Info */}
           <div className='mb-4'>

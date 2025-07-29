@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Building, Home, User, Mail, Phone, MapPin, Lock, Eye, EyeOff } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Building, Home, User, Mail, Phone, MapPin, Lock, Eye, EyeOff, X } from 'lucide-react';
 import API from '../services/api';
 import { useNavigate } from 'react-router-dom';
 
@@ -25,6 +25,28 @@ const Registration = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [photo, setPhoto] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const fileInputRef = useRef(null);
+  
+  const handlePhotoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setPhoto(file);
+      setPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const triggerFileSelect = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleRemovePhoto = () => {
+    setPhoto(null);
+    setPreview(null);
+    fileInputRef.current.value = null;
+  };
+
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -45,18 +67,44 @@ const Registration = () => {
 
   const navigate = useNavigate();
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  try {
-    const res = await API.post('/auth/register', formData);
-    console.log('Registration success', res.data);
-    alert('Registered successfully! Please login.');
-    navigate('/');  // Navigate to login page
-  } catch (err) {
-    console.error('Registration failed', err.response?.data);
-    alert(err.response?.data?.msg || 'Registration failed');
-  }
-};
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+  
+    try {
+      // Convert photo to base64
+      let base64Photo = '';
+      if (photo) {
+        const reader = new FileReader();
+  
+        reader.onloadend = async () => {
+          base64Photo = reader.result;
+  
+          const finalData = {
+            ...formData,
+            photo: base64Photo, // Add photo to data
+          };
+  
+          const res = await API.post('/auth/register', finalData);
+          console.log('Registration success', res.data);
+          alert('Registered successfully! Please login.');
+          navigate('/');
+        };
+  
+        reader.readAsDataURL(photo);
+      } else {
+        // If photo is optional or not uploaded
+        const res = await API.post('/auth/register', formData);
+        console.log('Registration success', res.data);
+        alert('Registered successfully! Please login.');
+        navigate('/');
+      }
+  
+    } catch (err) {
+      console.error('Registration failed', err.response?.data);
+      alert(err.response?.data?.msg || 'Registration failed');
+    }
+  };
+  
 
   const userTypes = [
     { value: 'buyer', label: 'Property Buyer', icon: Home },
@@ -105,6 +153,48 @@ const handleSubmit = async (e) => {
 
           {/* Registration Form */}
           <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
+          <div className="flex flex-col items-center space-y-2 mb-6">
+              <div className="relative">
+                <div
+                  onClick={triggerFileSelect}
+                  className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-blue-500 overflow-hidden shadow"
+                >
+                  {preview ? (
+                    <img src={preview} alt="Preview" className="object-cover w-full h-full" />
+                  ) : (
+                    <User className="w-10 h-10 text-gray-500" />
+                  )}
+                </div>
+
+                {preview && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemovePhoto();
+                    }}
+                    className="absolute -top-3 -right-3 bg-white rounded-full p-1 shadow hover:bg-red-100"
+                    type="button"
+                  >
+                    <X className="h-4 w-4 text-red-600" />
+                  </button>
+                )}
+              </div>
+
+              <span className="text-sm text-gray-500">
+                {preview ? 'Click to change photo' : 'Click to upload photo'}
+              </span>
+
+              <input
+                type="file"
+                accept="image/*"
+                ref={fileInputRef}
+                onChange={handlePhotoChange}
+                className="hidden"
+              />
+            </div>
+
+
+
             <div className="space-y-6">
               {/* User Type Selection */}
               <div>

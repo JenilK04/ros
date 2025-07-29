@@ -71,6 +71,7 @@ const login = async (req, res) => {
       licenseNumber: user.licenseNumber,
       experience: user.experience,
       specialization: user.specialization,
+      photo: user.photo
     });
 
   } catch (err) {

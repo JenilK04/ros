@@ -19,12 +19,14 @@ const Navbar = () => {
           <Building className="text-white" />
           <div className="text-xl font-bold text-white">ROS Ecosystem</div>
       </div>
+     
       <div className="flex items-center space-x-4">
+      {role === "user" && (
         <a href="/dashboard"
           className="text-white hover:text-gray-300 font-medium"
         >
           Dashboard
-        </a>
+        </a>)}
 
           {role === 'admin' &&(
           <a href="/admin"
@@ -38,12 +40,13 @@ const Navbar = () => {
           >
             Properties
           </a>
-
+          
+          {role === "user" && (
           <a href="/profile"
             className="text-white hover:text-gray-300 font-medium"
           >
             Profile
-          </a>
+          </a>)}
 
         <button
           onClick={handleLogout}

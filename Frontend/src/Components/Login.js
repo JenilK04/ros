@@ -32,6 +32,8 @@ const Login = () => {
       localStorage.setItem('licenseNumber', response.data.licenseNumber);
       localStorage.setItem('experience', response.data.experience);
       localStorage.setItem('specialization', JSON.stringify(response.data.specialization));
+      localStorage.setItem('photo', response.data.photo);
+
 
 
       // Redirect based on role
@@ -48,6 +50,22 @@ const Login = () => {
 
 
   return (
+  <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+      {/* Header */}
+    <div className="bg-white shadow-sm border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center space-x-2">
+              <Building className="h-8 w-8 text-blue-600" />
+              <span className="text-xl font-bold text-gray-900">ROS-Real Estate EcoSystem</span>
+            </div>
+            <div className="text-sm text-gray-500">
+            Join Our Real Estate Network
+            </div>
+          </div>
+        </div>
+      </div>
+  
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
       <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-200 w-full max-w-md">
         <div className="flex items-center space-x-2 mb-6">
@@ -113,6 +131,7 @@ const Login = () => {
         </p>
       </div>
     </div>
+  </div>
   );
 };
 
