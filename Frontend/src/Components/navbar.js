@@ -1,4 +1,3 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogOut,Building } from 'lucide-react';
 
@@ -14,7 +13,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-blue-600 shadow p-4 flex justify-between items-center">
+    <nav className="bg-gradient-to-br from-blue-600 to-indigo-800 shadow p-4 flex justify-between items-center">
       <div className="flex items-center gap-2">
           <Building className="text-white" />
           <div className="text-xl font-bold text-white">ROS Ecosystem</div>
