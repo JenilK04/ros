@@ -1,6 +1,7 @@
 // backend/routes/propertyRoutes.js
 const express = require('express');
 const Property = require('../models/Property');
+const mongoose = require('mongoose')
 
 const router = express.Router();
 
@@ -12,7 +13,7 @@ router.post('/', async (req, res) => {
     const {
       title, listingType, propertyType, price,
       street, city, state, zip, country,
-      description, bedrooms, bathrooms, area,
+      description, bedrooms, bathrooms, area, contactName, contactPhone,
       images // <-- This will now directly contain Base64 strings
     } = req.body;
 
@@ -49,7 +50,9 @@ router.post('/', async (req, res) => {
       bedrooms: ['Apartment', 'House', 'Condo'].includes(propertyType) ? parseInt(bedrooms) || 0 : 0,
       bathrooms: ['Apartment', 'House', 'Condo'].includes(propertyType) ? parseFloat(bathrooms) || 0 : 0,
       area: ['Apartment', 'House', 'Condo'].includes(propertyType) ? parseInt(area) || 0 : 0,
-      images: images // Store Base64 strings directly
+      images: images, // Store Base64 strings directly
+      contactName,
+      contactPhone
     });
 
     const savedProperty = await newProperty.save();
@@ -70,6 +73,28 @@ router.get('/', async (req, res) => {
     res.json(properties);
   } catch (error) {
     console.error('Error fetching properties:', error);
+    res.status(500).json({ msg: 'Server error', error: error.message });
+  }
+});
+
+router.get('/:id', async (req, res) => {
+  try {
+    const propertyId = req.params.id;
+
+    // Optional: Validate if the ID is a valid MongoDB ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(propertyId)) {
+      return res.status(400).json({ msg: 'Invalid property ID format.' });
+    }
+
+    const property = await Property.findById(propertyId);
+
+    if (!property) {
+      return res.status(404).json({ msg: 'Property not found.' });
+    }
+
+    res.json(property);
+  } catch (error) {
+    console.error('Error fetching single property:', error);
     res.status(500).json({ msg: 'Server error', error: error.message });
   }
 });

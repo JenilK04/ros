@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { X, MapPin, IndianRupeeIcon, Ruler, Bed, Bath, Home, Building, LandPlot } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, MapPin, IndianRupeeIcon, Ruler, Bed, Bath, Home, Building, LandPlot, Phone, User } from 'lucide-react';
 
 const AddPropertyModal = ({ isOpen, onClose, onAddProperty }) => {
   const [formData, setFormData] = useState({
@@ -16,8 +16,10 @@ const AddPropertyModal = ({ isOpen, onClose, onAddProperty }) => {
     bedrooms: '',
     bathrooms: '',
     area: '',
-    images: [],
-    imagePreviews: [],
+    images: [],         // Stores Base64 strings
+    imagePreviews: [],  // Stores Base64 strings for previews
+    contactName: '',
+    contactPhone: '',
   });
   const [formErrors, setFormErrors] = useState({});
 
@@ -42,22 +44,20 @@ const AddPropertyModal = ({ isOpen, onClose, onAddProperty }) => {
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
     const newPreviews = [];
-    const newImages = [];
 
     files.forEach((file) => {
-      newImages.push(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        newPreviews.push(reader.result);
+        newPreviews.push(reader.result); // reader.result is the Base64 data URI
         if (newPreviews.length === files.length) { // Once all files are read
           setFormData((prevData) => ({
             ...prevData,
-            images: [...prevData.images, ...newImages],
-            imagePreviews: [...prevData.imagePreviews, ...newPreviews],
+            images: [...prevData.images, ...newPreviews], // Store Base64 strings
+            imagePreviews: [...prevData.imagePreviews, ...newPreviews], // Also for previews
           }));
         }
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(file); // Reads file as Base64 data URI
     });
 
     if (formErrors.images) {
@@ -83,8 +83,12 @@ const AddPropertyModal = ({ isOpen, onClose, onAddProperty }) => {
     if (!formData.zip.trim()) errors.zip = 'ZIP code is required.';
     if (!formData.country.trim()) errors.country = 'Country is required.';
     if (!formData.description.trim()) errors.description = 'Description is required.';
-    
-    // Conditional validation for residential types
+    if (!formData.contactName.trim()) errors.contactName = 'Contact Name is required.';
+    if (!formData.contactPhone.trim()) errors.contactPhone = 'Contact Phone is required.';
+    if (formData.contactPhone.trim() && !/^\d{10,15}$/.test(formData.contactPhone.trim())) { // Adjusted regex for 10-15 digits
+      errors.contactPhone = 'Please enter a valid phone number (10-15 digits).';
+    }
+
     if (['Apartment', 'House', 'Condo'].includes(formData.propertyType)) {
       if (!formData.bedrooms || parseInt(formData.bedrooms) <= 0) errors.bedrooms = 'Bedrooms must be a positive number.';
       if (!formData.bathrooms || parseFloat(formData.bathrooms) <= 0) errors.bathrooms = 'Bathrooms must be a positive number.';
@@ -100,12 +104,13 @@ const AddPropertyModal = ({ isOpen, onClose, onAddProperty }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (validateForm()) {
-      onAddProperty(formData); // Pass data to parent
-      // Reset form
+      onAddProperty(formData); // Pass data to parent (Properties.jsx)
+      // Reset form on successful submission
       setFormData({
         title: '', listingType: 'For Sale', propertyType: 'Apartment', price: '',
         street: '', city: '', state: '', zip: '', country: '', description: '',
         bedrooms: '', bathrooms: '', area: '', images: [], imagePreviews: [],
+        contactName: '', contactPhone: '',
       });
       setFormErrors({}); // Clear errors
       onClose(); // Close modal
@@ -114,7 +119,7 @@ const AddPropertyModal = ({ isOpen, onClose, onAddProperty }) => {
     }
   };
 
-  if (!isOpen) return null; // Don't render if not open
+  if (!isOpen) return null;
 
   const isResidential = ['Apartment', 'House', 'Condo'].includes(formData.propertyType);
 
@@ -390,6 +395,53 @@ const AddPropertyModal = ({ isOpen, onClose, onAddProperty }) => {
               </div>
             </>
           )}
+
+          {/* Contact Details Section */}
+          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <Phone className="h-5 w-5 text-indigo-600" /> Contact Details
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div>
+              <label htmlFor="contactName" className="block text-sm font-medium text-gray-700 mb-1">
+                Contact Person Name <span className="text-red-500">*</span>
+              </label>
+              <div className="relative mt-1">
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">
+                  <User className="h-5 w-5" />
+                </span>
+                <input
+                  type="text"
+                  id="contactName"
+                  name="contactName"
+                  value={formData.contactName}
+                  onChange={handleChange}
+                  className={`block w-full pl-10 pr-3 border ${formErrors.contactName ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500`}
+                  placeholder="e.g., Jane Doe"
+                />
+              </div>
+              {formErrors.contactName && <p className="text-red-500 text-xs mt-1">{formErrors.contactName}</p>}
+            </div>
+            <div>
+              <label htmlFor="contactPhone" className="block text-sm font-medium text-gray-700 mb-1">
+                Contact Phone Number <span className="text-red-500">*</span>
+              </label>
+              <div className="relative mt-1">
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">
+                  <Phone className="h-5 w-5" />
+                </span>
+                <input
+                  type="tel"
+                  id="contactPhone"
+                  name="contactPhone"
+                  value={formData.contactPhone}
+                  onChange={handleChange}
+                  className={`block w-full pl-10 pr-3 border ${formErrors.contactPhone ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500`}
+                  placeholder="e.g., 9876543210"
+                />
+              </div>
+              {formErrors.contactPhone && <p className="text-red-500 text-xs mt-1">{formErrors.contactPhone}</p>}
+            </div>
+          </div>
 
           {/* Image Upload */}
           <div className="mb-6">

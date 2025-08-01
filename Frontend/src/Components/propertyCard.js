@@ -1,4 +1,7 @@
-import { MapPin, IndianRupeeIcon } from 'lucide-react';
+// src/components/PropertyCard.jsx
+import React from 'react';
+import { MapPin, IndianRupeeIcon, Phone, User } from 'lucide-react';
+import { Link } from 'react-router-dom'; // <--- Import Link
 
 const PropertyCard = ({ property }) => {
   return (
@@ -16,13 +19,34 @@ const PropertyCard = ({ property }) => {
           <MapPin className="h-4 w-4 mr-2 text-blue-500" />
           <p className="text-sm">{property.location}</p>
         </div>
-        <div className="flex items-center text-green-700 font-bold text-lg">
+        <div className="flex items-center text-green-700 font-bold text-lg mb-2">
           <IndianRupeeIcon className="h-5 w-5 mr-1" />
           <p>{property.price}</p>
         </div>
-        <button className="mt-4 w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition duration-200">
+        
+        {/* Display basic contact details on card if available (optional) */}
+        {property.contactName && (
+          <div className="flex items-center text-gray-700 text-sm mb-1">
+            <User className="h-4 w-4 mr-2 text-gray-500" />
+            <p>{property.contactName}</p>
+          </div>
+        )}
+        {property.contactPhone && (
+          <div className="flex items-center text-gray-700 text-sm mb-4">
+            <Phone className="h-4 w-4 mr-2 text-gray-500" />
+            <a href={`tel:${property.contactPhone}`} className="hover:underline text-blue-600">
+              {property.contactPhone}
+            </a>
+          </div>
+        )}
+
+        {/* Use Link component for navigation */}
+        <Link 
+          to={`/properties/${property.id}`} // <--- Link to the new details route
+          className="mt-4 w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition duration-200 block text-center"
+        >
           View Details
-        </button>
+        </Link>
       </div>
     </div>
   );

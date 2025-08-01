@@ -6,7 +6,8 @@ export default {
     "./src/Components/Registration.js",
     "./src/Components/navbar.js",
     "./src/Components/profile.js",
-    "./src/Components/Properties.js"
+    "./src/Components/Properties.js",
+    "./src/Components/addProperty.js"
   ],
   theme: {
     extend: {},

@@ -1,71 +1,59 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; // Import useEffect
 import Navbar from './navbar';
-import PropertyCard from './propertyCard'; // Import the new PropertyCard component
-import AddPropertyModal from './addProperty'; // Import the new AddPropertyModal component
+import PropertyCard from './propertyCard';
+import AddPropertyModal from './addProperty'; // Ensure this path is correct
 import { Plus } from 'lucide-react';
+import API from '../services/api'; // Import Axios
 
-const initialSampleProperties = [
-  {
-    id: 1,
-    title: 'Luxury Apartment in Downtown',
-    location: 'New York, NY',
-    price: '1,200,000',
-    image: 'https://via.placeholder.com/600x400/FF5733/FFFFFF?text=Luxury+Apartment',
-  },
-  {
-    id: 2,
-    title: 'Modern Villa with Pool',
-    location: 'Los Angeles, CA',
-    price: '2,500,000',
-    image: 'https://via.placeholder.com/600x400/3366FF/FFFFFF?text=Modern+Villa',
-  },
-  {
-    id: 3,
-    title: 'Cozy Cottage',
-    location: 'Austin, TX',
-    price: '850,000',
-    image: 'https://via.placeholder.com/600x400/33FF57/FFFFFF?text=Cozy+Cottage',
-  },
-  {
-    id: 4,
-    title: 'Spacious Family Home',
-    location: 'Houston, TX',
-    price: '450,000',
-    image: 'https://via.placeholder.com/600x400/FF33FF/FFFFFF?text=Family+Home',
-  },
-  {
-    id: 5,
-    title: 'Riverside Condo',
-    location: 'Miami, FL',
-    price: '780,000',
-    image: 'https://via.placeholder.com/600x400/33FFFF/FFFFFF?text=Riverside+Condo',
-  },
-];
+// Remove initialSampleProperties as we will fetch from the backend
+// const initialSampleProperties = [ ... ];
 
 const Properties = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  // Use state to manage properties if you want to add newly submitted ones to the list
-  const [properties, setProperties] = useState(initialSampleProperties);
+  const [properties, setProperties] = useState([]); // Initialize as empty array, data will come from API
+  const [loading, setLoading] = useState(true);   // State for loading indicator
+  const [error, setError] = useState(null);     // State for error messages
 
-  const handleAddProperty = (newPropertyData) => {
-    // In a real application, you'd send this data to a backend API
-    // and then fetch updated properties or add the new property to state
-    console.log("New property received in parent:", newPropertyData);
+  ; // Your backend API URL
 
-    // For demonstration, let's create a mock property object and add it to the list
-    const newId = Math.max(...properties.map(p => p.id)) + 1; // Simple ID generation
-    const newProperty = {
-      id: newId,
-      title: newPropertyData.title,
-      location: `${newPropertyData.city}, ${newPropertyData.state}`, // Combine address for display
-      price: `$${parseFloat(newPropertyData.price).toLocaleString()}`, // Format price
-      // For images, you'd ideally get a URL from your backend after upload
-      // For now, let's use the first image preview or a fallback placeholder
-      image: newPropertyData.imagePreviews[0] || 'https://via.placeholder.com/600x400/CCCCCC/FFFFFF?text=New+Property',
-    };
-    setProperties((prevProperties) => [...prevProperties, newProperty]);
+  // Function to fetch properties from the backend
+  const fetchProperties = async () => {
+    setLoading(true); // Set loading to true before fetching
+    setError(null);   // Clear any previous errors
+    try {
+      const response = await API.get(`/properties`);
+      setProperties(response.data); // Axios puts the response data in .data
+    } catch (err) {
+      console.error('Failed to fetch properties:', err);
+      // More robust error message for the user
+      setError(err.response?.data?.msg || 'Failed to load properties. Please try again later.');
+    } finally {
+      setLoading(false); // Set loading to false after fetch completes (success or error)
+    }
+  };
 
-    alert('Property added successfully! (See console for full details)');
+  // Use useEffect to fetch properties when the component mounts
+  useEffect(() => {
+    fetchProperties();
+  }, []); // Empty dependency array ensures this runs only once on mount
+
+  // Function to handle adding a new property via API
+  const handleAddProperty = async (newPropertyData) => {
+    // newPropertyData contains all form fields, including Base64 images
+    try {
+      const response = await API.post(`/properties`, newPropertyData);
+      // Axios automatically sets Content-Type to application/json and stringifies the body
+      // for JSON payloads, including your Base64 images.
+
+      console.log('Property added successfully:', response.data);
+      alert('Property added successfully!');
+      setIsModalOpen(false); // Close modal on success
+      fetchProperties(); // Re-fetch all properties to update the list with the new one
+    } catch (err) {
+      console.error('Error adding property:', err);
+      // Provide user-friendly error messages from the backend or a generic one
+      alert(`Failed to add property: ${err.response?.data?.msg || err.message || 'Unknown error occurred.'}`);
+    }
   };
 
   return (
@@ -75,17 +63,41 @@ const Properties = () => {
         <div className="max-w-7xl mx-auto py-8">
           <h1 className="text-3xl text-gray-800 font-extrabold mb-8 text-center">Available Properties</h1>
 
-          {/* Properties Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {properties.map((property) => (
-              <PropertyCard key={property.id} property={property} />
-            ))}
-          </div>
+          {/* Loading, Error, and No Properties messages */}
+          {loading && <p className="text-center text-gray-600">Loading properties...</p>}
+          {error && <p className="text-center text-red-600">{error}</p>}
+          {!loading && !error && properties.length === 0 && (
+            <p className="text-center text-gray-600">No properties available. Add one!</p>
+          )}
+
+          {/* Properties Grid - Only render if not loading and no error, and properties exist */}
+          {!loading && !error && properties.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {properties.map((property) => (
+                <PropertyCard
+                  key={property._id} // Use property._id from MongoDB as the key
+                  property={{
+                    id: property._id, // Pass _id as id for consistency if PropertyCard uses it
+                    title: property.title,
+                    // Combine address components for display, assuming your backend sends address as a nested object
+                    location: `${property.address.city}, ${property.address.state}`,
+                    // Format price with currency symbol and locale string
+                    price: `₹${parseFloat(property.price).toLocaleString('en-IN')}`, // Using Indian Rupee symbol
+                    // For Base64 images, the image property directly holds the Base64 string
+                    image: property.images.length > 0 ? property.images[0] : 'https://via.placeholder.com/600x400/CCCCCC/FFFFFF?text=No+Image',
+                    // Pass contact details to PropertyCard
+                    contactName: property.contactName,
+                    contactPhone: property.contactPhone,
+                  }}
+                />
+              ))}
+            </div>
+          )}
 
           {/* Fixed Plus Button */}
           <div className="fixed bottom-6 right-6 z-50">
             <button
-              onClick={() => setIsModalOpen(true)}
+              onClick={() => setIsModalOpen(true)} // This is correctly opening the modal
               className="flex items-center justify-center rounded-full h-14 w-14 text-white shadow-xl
                          bg-gradient-to-br from-blue-600 to-indigo-800
                          hover:from-blue-700 hover:to-indigo-900 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
@@ -101,7 +113,7 @@ const Properties = () => {
       <AddPropertyModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onAddProperty={handleAddProperty}
+        onAddProperty={handleAddProperty} // Pass the API-calling function as prop
       />
     </>
   );

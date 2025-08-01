@@ -7,6 +7,8 @@ import Registration from './Components/Registration';
 import Properties from './Components/Properties'
 import ProtectedAdmin from './Components/ProtectedAdmin';
 import Profile from './Components/profile';
+import PropertyDetails from './Components/propertyDetails';
+
 function App() {
   return (
     <div>
@@ -14,7 +16,7 @@ function App() {
         <Routes>    
           <Route path ="/" element={<Login/>}/> 
       <Route path="/dashboard" element={<Dashboard />} />
-      
+
       <Route
         path="/admin"
         element={
@@ -26,6 +28,7 @@ function App() {
           <Route path="/registration/" element={<Registration/>}/>
           <Route path="/properties" element={<Properties/>}/>
           <Route path="/profile" element={<Profile/>}/>
+          <Route path="/properties/:id" element={<PropertyDetails/>} />
 
         </Routes>
       </BrowserRouter>

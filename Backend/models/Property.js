@@ -17,8 +17,11 @@ const PropertySchema = new mongoose.Schema({
   // Residential specific fields (optional based on propertyType)
   bedrooms: { type: Number, min: 0, default: 0 },
   bathrooms: { type: Number, min: 0, default: 0 },
-  area: { type: Number, min: 0, default: 0 }, // in Sq. Ft.
-  // Images will be stored as an array of URLs (strings)
+  area: { type: Number, min: 0, default: 0 },
+   // in Sq. Ft.
+   // Images will be stored as an array of URLs (strings)
+  contactName: { type: String, required: true, trim: true },
+  contactPhone: { type: String, required: true, trim: true },
   images: [{ type: String }],
   createdAt: { type: Date, default: Date.now }
 });
