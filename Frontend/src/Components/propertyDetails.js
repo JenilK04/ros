@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom'; // To get ID from URL
 import API from '../services/api'; // For API calls
 import Navbar from './navbar'; // Include your Navbar
-import { MapPin, IndianRupeeIcon, Bed, Bath, Ruler, Phone, User, Building, Home, LandPlot } from 'lucide-react';
+import { MapPin, IndianRupeeIcon, Bed, Bath, Ruler, Phone, User, Building, Home, LandPlot, ArrowLeft, ArrowRight } from 'lucide-react';
 
 
 const PropertyDetails = () => {
@@ -105,14 +105,14 @@ const PropertyDetails = () => {
                       className="absolute top-1/2 left-4 -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full z-10 hover:bg-opacity-75 transition-opacity"
                       title="Previous image"
                     >
-                      &#9664;
+                      <ArrowLeft/>
                     </button>
                     <button
                       onClick={() => setCurrentImageIndex((prev) => (prev === property.images.length - 1 ? 0 : prev + 1))}
                       className="absolute top-1/2 right-4 -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full z-10 hover:bg-opacity-75 transition-opacity"
                       title="Next image"
                     >
-                      &#9654;
+                      <ArrowRight/>
                     </button>
                     <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
                       {property.images.map((_, index) => (

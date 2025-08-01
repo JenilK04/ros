@@ -50,9 +50,9 @@ const Login = () => {
 
 
   return (
-  <>
+    <>
       
-    <div className="bg-gradient-to-br from-blue-600 to-indigo-800 shadow-sm border-b border-gray-200">
+      <div className="bg-gradient-to-br from-blue-600 to-indigo-800 shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-2">
@@ -66,7 +66,7 @@ const Login = () => {
         </div>
       </div>
   
-    <div className="min-h-screen bg-gradient-to-br from-gray-200 via-blue-200 to-indigo-200 flex items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 flex items-center justify-center">
       <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-200 w-full max-w-md">
         <div className="flex items-center space-x-2 mb-6">
           <Building className="h-8 w-8 text-blue-600" />

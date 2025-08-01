@@ -7,7 +7,9 @@ export default {
     "./src/Components/navbar.js",
     "./src/Components/profile.js",
     "./src/Components/Properties.js",
-    "./src/Components/addProperty.js"
+    "./src/Components/addProperty.js",
+    "./src/Components/propertyDetails.js",
+    "./src/Components/manageUsers-A.js"
   ],
   theme: {
     extend: {},

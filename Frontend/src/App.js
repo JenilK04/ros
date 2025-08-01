@@ -8,15 +8,13 @@ import Properties from './Components/Properties'
 import ProtectedAdmin from './Components/ProtectedAdmin';
 import Profile from './Components/profile';
 import PropertyDetails from './Components/propertyDetails';
+import ManageUsersPage from './Components/manageUsers-A';
 
 function App() {
   return (
     <div>
       <BrowserRouter>
         <Routes>    
-          <Route path ="/" element={<Login/>}/> 
-      <Route path="/dashboard" element={<Dashboard />} />
-
       <Route
         path="/admin"
         element={
@@ -25,10 +23,21 @@ function App() {
           </ProtectedAdmin>
         }
       />
-          <Route path="/registration/" element={<Registration/>}/>
-          <Route path="/properties" element={<Properties/>}/>
-          <Route path="/profile" element={<Profile/>}/>
-          <Route path="/properties/:id" element={<PropertyDetails/>} />
+
+      <Route
+        path="/manageusers"
+        element={
+          <ProtectedAdmin allowedRole="admin">
+            <ManageUsersPage />
+          </ProtectedAdmin>
+        }
+      />
+      <Route path ="/" element={<Login/>}/> 
+      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/registration/" element={<Registration/>}/>
+      <Route path="/properties" element={<Properties/>}/>
+      <Route path="/profile" element={<Profile/>}/>
+      <Route path="/properties/:id" element={<PropertyDetails/>} />
 
         </Routes>
       </BrowserRouter>

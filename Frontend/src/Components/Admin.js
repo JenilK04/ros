@@ -1,10 +1,11 @@
 import React from 'react';
 import Navbar from './navbar';
 import { Settings, BarChart2, UserCog } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Admin = () => {
   const adminName = 'Admin';
-
+const navigate = useNavigate()
   return (
     <>
       <Navbar />
@@ -16,8 +17,8 @@ const Admin = () => {
           <p className="text-gray-500">Manage system settings, users, and reports.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-          <Card title="Manage Users" icon={<UserCog className="h-8 w-8 text-blue-600" />} />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6" >
+          <Card title="Manage Users" icon={<UserCog className="h-8 w-8 text-blue-600"/>} onClick={() => navigate('/manageusers')} />
           <Card title="Reports & Analytics" icon={<BarChart2 className="h-8 w-8 text-green-600" />} />
           <Card title="System Settings" icon={<Settings className="h-8 w-8 text-purple-600" />} />
         </div>
@@ -38,8 +39,8 @@ const Admin = () => {
   );
 };
 
-const Card = ({ title, icon }) => (
-  <div className="bg-white p-4 rounded-xl shadow hover:shadow-lg transition cursor-pointer transform hover:scale-105">
+const Card = ({ title, icon, onClick }) => (
+  <div className="bg-white p-4 rounded-xl shadow hover:shadow-lg transition cursor-pointer transform hover:scale-105" onClick={onClick}>
     <div className="flex items-center space-x-4 mb-2">
       {icon}
       <h2 className="text-lg font-semibold text-gray-700">{title}</h2>
