@@ -9,6 +9,7 @@ import ProtectedAdmin from './Components/ProtectedAdmin';
 import Profile from './Components/profile';
 import PropertyDetails from './Components/propertyDetails';
 import ManageUsersPage from './Components/manageUsers-A';
+import UserDetails from './Components/userDetails';
 
 function App() {
   return (
@@ -32,8 +33,17 @@ function App() {
           </ProtectedAdmin>
         }
       />
+
+      <Route
+        path="/userdetails/:id"
+        element={
+          <ProtectedAdmin allowedRole="admin">
+            <UserDetails />
+          </ProtectedAdmin>
+        }
+      />
       <Route path ="/" element={<Login/>}/> 
-      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/dashboard" element={<Dashboard/>} />
       <Route path="/registration/" element={<Registration/>}/>
       <Route path="/properties" element={<Properties/>}/>
       <Route path="/profile" element={<Profile/>}/>

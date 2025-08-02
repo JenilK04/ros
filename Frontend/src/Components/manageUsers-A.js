@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import Navbar from './navbar';
+import{ useState, useEffect } from 'react';
 import API from '../services/api';
-import { UserPlus, Search, Edit, Trash2, Ban } from 'lucide-react';
+import Navbar from './navbar';
+import { UserPlus, Search, Edit, Trash2} from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const ManageUsersPage = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const navigate = useNavigate();
+
 
   // 1. Fetch all user data from the API on component load
   useEffect(() => {
@@ -30,7 +33,7 @@ const ManageUsersPage = () => {
   if (loading) {
     return (
       <>
-        <Navbar />
+        <Navbar/>
         <div className="p-8 text-center text-gray-600">Loading users...</div>
       </>
     );
@@ -39,12 +42,11 @@ const ManageUsersPage = () => {
   if (error) {
     return (
       <>
-        <Navbar />
+        <Navbar/>
         <div className="p-8 text-center text-red-600">{error}</div>
       </>
     );
   }
-
   // Filter users based on search term
   const filteredUsers = users.filter(user => {
     const fullName = user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.name;
@@ -100,7 +102,7 @@ const ManageUsersPage = () => {
                 {filteredUsers.map((user) => (
                   <tr key={user._id}>
                     {/* Updated to handle both name and firstName/lastName */}
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 hover:underline" onClick={()=> navigate(`/userdetails/${user._id}`)}>
                       {user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.name}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>

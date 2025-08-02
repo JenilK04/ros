@@ -1,11 +1,7 @@
 const User = require('../models/Users');
 const Admin = require('../models/Admin');
+const mongoose = require('mongoose')
 
-/**
- * @desc    Get a list of all user data for the admin panel
- * @route   GET /api/admin/users
- * @access  Private (Admin only)
- */
 const getAllUsers = async (req, res) => {
   try {
     // Fetch all users from the User collection, excluding the password field for security
@@ -38,4 +34,26 @@ const getAllUsers = async (req, res) => {
   }
 };
 
-module.exports = { getAllUsers };
+const isAdmin = async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ msg: 'Invalid user ID format.' });
+    }
+
+    // Exclude sensitive information like password
+    const user = await User.findById(userId).select('-password');
+
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found.' });
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.error('Error fetching single user:', error);
+    res.status(500).json({ msg: 'Server error', error: error.message });
+  }
+};
+
+module.exports = { getAllUsers, isAdmin };

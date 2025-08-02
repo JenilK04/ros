@@ -9,7 +9,8 @@ export default {
     "./src/Components/Properties.js",
     "./src/Components/addProperty.js",
     "./src/Components/propertyDetails.js",
-    "./src/Components/manageUsers-A.js"
+    "./src/Components/manageUsers-A.js",
+    "./src/Components/userDetails.js"
   ],
   theme: {
     extend: {},
