@@ -44,7 +44,7 @@ function App() {
       />
       <Route path ="/" element={<Login/>}/> 
       <Route path="/dashboard" element={<Dashboard/>} />
-      <Route path="/registration/" element={<Registration/>}/>
+      <Route path="/registration" element={<Registration/>}/>
       <Route path="/properties" element={<Properties/>}/>
       <Route path="/profile" element={<Profile/>}/>
       <Route path="/properties/:id" element={<PropertyDetails/>} />
