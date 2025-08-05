@@ -50,7 +50,7 @@ const login = async (req, res) => {
     if (!isMatch) return res.status(400).json({ msg: 'Invalid credentials' });
 
     const token = jwt.sign(
-      { id: user._id, role: 'user', userType: user.userType },
+      { id: user._id, role: 'user' },
       process.env.JWT_SECRET,
       { expiresIn: '1d' }
     );
@@ -58,20 +58,20 @@ const login = async (req, res) => {
     res.json({
       token,
       role: 'user',
-      userType: user.userType,
-      name: user.firstName+" "+user.lastName,
-      phone: user.phone,
-      email: user.email,
-      address: user.address,
-      city: user.city,
-      zip: user.zip,
-      state: user.state,
-      country: user.country,
-      companyName: user.companyName,
-      licenseNumber: user.licenseNumber,
-      experience: user.experience,
-      specialization: user.specialization,
-      photo: user.photo
+      // userType: user.userType,
+      // name: user.firstName+" "+user.lastName,
+      // phone: user.phone,
+      // email: user.email,
+      // address: user.address,
+      // city: user.city,
+      // zip: user.zip,
+      // state: user.state,
+      // country: user.country,
+      // companyName: user.companyName,
+      // licenseNumber: user.licenseNumber,
+      // experience: user.experience,
+      // specialization: user.specialization,
+      // photo: user.photo
     });
 
   } catch (err) {
@@ -80,7 +80,30 @@ const login = async (req, res) => {
   }
 };
 
+const user = async (req, res) => {
+  if (req.user && req.user.id) {
+    try {
+      // --- CRUCIAL CHANGE ---
+      // We query the database to find the full user object
+      const user = await User.findById(req.user.id).select('-password');
+      
+      if (user) {
+        res.json(user); // Send the full user object
+      } else {
+        res.status(404).json({ message: 'User not found' });
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  } else {
+    res.status(401).json({ message: 'Not authorized, token failed' });
+  }
+}
+
+
 module.exports = {
   register,
   login,
+  user
 };

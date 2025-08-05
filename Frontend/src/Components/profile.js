@@ -1,40 +1,28 @@
 import React, { useState } from 'react';
+import { useUser } from '../Context/userContext'; // Import the custom hook
 import Navbar from './navbar';
-import {
-  Mail,
-  Phone,
-  User,
-  MapPin,
-  BadgeCheck,
-  BriefcaseBusiness,
-} from 'lucide-react';
+import {Mail,Phone,User,MapPin,BadgeCheck,BriefcaseBusiness,} from 'lucide-react';
 
 const Profile = () => {
-  const specialization = JSON.parse(localStorage.getItem('specialization')) || [];
-
-  const user = {
-    name: localStorage.getItem('name') || '',
-    role: localStorage.getItem('role') || '',
-    email: localStorage.getItem('email') || '',
-    phone: localStorage.getItem('phone') || '',
-    userType: localStorage.getItem('userType') || '',
-    address: localStorage.getItem('address') || '',
-    city: localStorage.getItem('city') || '',
-    state: localStorage.getItem('state') || '',
-    zip: localStorage.getItem('zip') || '',
-    country: localStorage.getItem('country') || '',
-    companyName: localStorage.getItem('companyName') || '',
-    licenseNumber: localStorage.getItem('licenseNumber') || '',
-    experience: localStorage.getItem('experience') || '',
-    photo: localStorage.getItem('photo') || '',
-  };
-
+  const { user, loading } = useUser(); // Get user data from context
   const [imageError, setImageError] = useState(false);
+
+  // We need to fetch this from the API along with other user details
+  // Or, if it's separate, you might fetch it in a different useEffect
+  const specialization = user?.specialization || [];
+
+  if (loading) {
+    return <div className="text-center mt-20">Loading profile...</div>;
+  }
+
+  // Handle case where user is not logged in
+  if (!user) {
+    return <div className="text-center mt-20">Please log in to view your profile.</div>;
+  }
 
   return (
     <>
-      <Navbar />
-
+      <Navbar/>
       <main className="min-h-screen bg-gray-50 py-12 px-4">
         {/* Header */}
         <div className="max-w-4xl mx-auto mb-10 text-center">
@@ -46,9 +34,7 @@ const Profile = () => {
 
         {/* Profile Content */}
         <section className="bg-white rounded-xl shadow-md border border-gray-200 p-8">
-
           {/* Profile Image */}
-
           <div className="flex justify-center mb-8">
             {user.photo && !imageError ? (
               <img
@@ -64,7 +50,6 @@ const Profile = () => {
             )}
           </div>
 
-
           {/* Basic Info */}
           <div className='mb-4'>
             <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2 pb-2">
@@ -72,7 +57,7 @@ const Profile = () => {
               Basic Information
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <Input label="Full Name" value={user.name} />
+              <Input label="Full Name" value={user.firstName + " " + user.lastName} />
               <Input label="Role" value={user.role} />
               <Input label="Email" value={user.email} icon={<Mail className="text-gray-400 h-4 w-4" />} />
               <Input label="Phone" value={user.phone} icon={<Phone className="text-gray-400 h-4 w-4" />} />
@@ -141,7 +126,7 @@ const Input = ({ label, value, icon }) => (
       {icon && <span className="absolute left-3 top-2.5">{icon}</span>}
       <input
         type="text"
-        value={value}
+        value={value || ''} // Use default value to avoid uncontrolled/controlled component warning
         readOnly
         className={`w-full px-4 py-2 rounded-md border bg-gray-100 text-gray-800 ${
           icon ? 'pl-10' : ''
