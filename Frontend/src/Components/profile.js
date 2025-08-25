@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useUser } from '../Context/userContext'; // Import the custom hook
+import { useUser } from '../Context/userContext'; 
 import Navbar from './navbar';
 import {Mail,Phone,User,MapPin,BadgeCheck,BriefcaseBusiness,} from 'lucide-react';
 

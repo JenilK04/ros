@@ -1,57 +1,74 @@
-import {BrowserRouter,Routes,Route} from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './App.css';
 import Login from './Components/Login';
 import Dashboard from './Components/Dashboard';
 import Admin from './Components/Admin';
 import Registration from './Components/Registration';
-import Properties from './Components/Properties'
-import ProtectedAdmin from './Components/ProtectedAdmin';
+import Properties from './Components/Properties';
 import Profile from './Components/profile';
 import PropertyDetails from './Components/propertyDetails';
 import ManageUsersPage from './Components/manageUsers-A';
 import UserDetails from './Components/userDetails';
+import {ProtectedAdmin,ProtectedUser} from './Components/ProtectedRoutes'; 
 
 function App() {
   return (
     <div>
       <BrowserRouter>
-        <Routes>    
-      <Route
-        path="/admin"
-        element={
-          <ProtectedAdmin allowedRole="admin">
-            <Admin />
-          </ProtectedAdmin>
-        }
-      />
+        <Routes>
+          {/* Public Routes - Accessible to everyone */}
+          <Route path="/" element={<Login />} />
+          <Route path="/registration" element={<Registration />} />
+          <Route path="/properties" element={<ProtectedUser><Properties /></ProtectedUser>} />
+          <Route path="/properties/:id" element={<ProtectedUser><PropertyDetails /></ProtectedUser>} />
 
-      <Route
-        path="/manageusers"
-        element={
-          <ProtectedAdmin allowedRole="admin">
-            <ManageUsersPage />
-          </ProtectedAdmin>
-        }
-      />
+          {/* Protected Routes for Admins Only */}
+          <Route
+            path="/admin"
+            element={
+              <ProtectedAdmin allowedRole="admin">
+                <Admin />
+              </ProtectedAdmin>
+            }
+          />
+          <Route
+            path="/manageusers"
+            element={
+              <ProtectedAdmin allowedRole="admin">
+                <ManageUsersPage />
+              </ProtectedAdmin>
+            }
+          />
+          <Route
+            path="/userdetails/:id"
+            element={
+              <ProtectedAdmin allowedRole="admin">
+                <UserDetails />
+              </ProtectedAdmin>
+            }
+          />
 
-      <Route
-        path="/userdetails/:id"
-        element={
-          <ProtectedAdmin allowedRole="admin">
-            <UserDetails />
-          </ProtectedAdmin>
-        }
-      />
-      <Route path ="/" element={<Login/>}/> 
-      <Route path="/dashboard" element={<Dashboard/>} />
-      <Route path="/registration" element={<Registration/>}/>
-      <Route path="/properties" element={<Properties/>}/>
-      <Route path="/profile" element={<Profile/>}/>
-      <Route path="/properties/:id" element={<PropertyDetails/>} />
+          {/* Protected Routes for Authenticated Users (including Admins) */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedUser>
+                <Dashboard />
+              </ProtectedUser>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedUser>
+                <Profile />
+              </ProtectedUser>
+            }
+          />
+          {/* Add more protected user routes here */}
 
         </Routes>
       </BrowserRouter>
-      
     </div>
   );
 }

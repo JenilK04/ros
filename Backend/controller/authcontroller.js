@@ -66,25 +66,34 @@ const login = async (req, res) => {
   }
 };
 
+// Corrected user function
 const user = async (req, res) => {
-  if (req.user && req.user.id) {
-    try {
-      // --- CRUCIAL CHANGE ---
-      // We query the database to find the full user object
-      const user = await User.findById(req.user.id).select('-password');
-      
-      if (user) {
-        res.json(user); // Send the full user object
-      } else {
-        res.status(404).json({ message: 'User not found' });
-      }
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Server error' });
+    // The authentication middleware should attach the token's payload to req.user
+    if (req.user && req.user.id && req.user.role) { 
+        try {
+            let foundUser;
+
+            // Check the role from the JWT payload
+            if (req.user.role === 'admin') {
+                foundUser = await Admin.findById(req.user.id).select('-password');
+            } else {
+                foundUser = await User.findById(req.user.id).select('-password');
+            }
+
+            if (foundUser) {
+                // Send the full user object
+                res.json(foundUser); 
+            } else {
+                // Return a 404 if the user is not found
+                res.status(404).json({ message: 'User not found' });
+            }
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: 'Server error' });
+        }
+    } else {
+        res.status(401).json({ message: 'Not authorized, token failed' });
     }
-  } else {
-    res.status(401).json({ message: 'Not authorized, token failed' });
-  }
 }
 
 

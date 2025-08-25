@@ -1,9 +1,19 @@
 import React from 'react';
 import Navbar from './navbar';
+import { useUser } from '../Context/userContext';
 import {Users, ClipboardCheck, Calendar, MessageCircle } from 'lucide-react';
 
 const Dashboard = () => {
-  const userName = localStorage.getItem('name') || 'User' 
+            const { user, loading } = useUser();
+            
+            if (loading) {
+              return <div>Loading...</div>; // Show a loading indicator
+            }
+            if (!user) {
+              // Handle the case where the user is not logged in or data is unavailable
+              return <div>Please log in to view the dashboard.</div>;
+            }
+
 
   return (
     <>
@@ -12,7 +22,7 @@ const Dashboard = () => {
         <h1 className="text-3xl font-bold mb-4 text-gray-800">Welcome to Your Dashboard</h1>
 
         <div className="bg-white p-4 rounded-lg shadow mb-6">
-          <h2 className="text-xl font-semibold text-gray-700">Welcome back, {userName}!</h2>
+          <h2 className="text-xl font-semibold text-gray-700">Welcome back, {user.firstName + " " + user.lastName}!</h2>
           <p className="text-gray-500">Here’s your quick summary and updates.</p>
         </div>
 

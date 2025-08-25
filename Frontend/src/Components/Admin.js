@@ -4,6 +4,7 @@ import { Settings, BarChart2, UserCog } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Admin = () => {
+    
   const adminName = 'Admin';
 const navigate = useNavigate()
   return (
