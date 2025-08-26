@@ -44,6 +44,12 @@ const Navbar = () => {
         </NavLink>
 
         {user?.role === "user" && (
+        <NavLink to="/property-inquiry" className={linkClass}>
+          Inquiry
+        </NavLink>
+        )}
+
+        {user?.role === "user" && (
           <NavLink to="/profile" className={linkClass}>
             Profile
           </NavLink>

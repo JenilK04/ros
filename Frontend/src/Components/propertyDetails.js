@@ -1,17 +1,21 @@
 // src/components/PropertyDetails.jsx
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom'; // To get ID from URL
-import API from '../services/api'; // For API calls
-import Navbar from './navbar'; // Include your Navbar
-import { MapPin, IndianRupeeIcon, Bed, Bath, Ruler, Phone, User, Building, Home, LandPlot, ArrowLeft, ArrowRight } from 'lucide-react';
-
+import { useParams, useNavigate } from 'react-router-dom'; // ✅ clean import
+import API from '../services/api';
+import Navbar from './navbar';
+import {
+  MapPin, IndianRupeeIcon, Bed, Bath, Ruler,
+  Phone, User, Building, Home, LandPlot,
+  ArrowLeft, ArrowRight
+} from 'lucide-react';
 
 const PropertyDetails = () => {
-  const { id } = useParams(); // Get the 'id' from the URL parameter
+  const { id } = useParams();
+  const navigate = useNavigate();
   const [property, setProperty] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0); // For image carousel
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     const fetchPropertyDetails = async () => {
@@ -28,16 +32,14 @@ const PropertyDetails = () => {
       }
     };
 
-    if (id) {
-      fetchPropertyDetails();
-    }
-  }, [id]); // Re-run effect if ID changes (though unlikely for a details page)
+    if (id) fetchPropertyDetails();
+  }, [id]);
 
   if (loading) {
     return (
       <>
         <Navbar />
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
+        <div className="min-h-screen flex items-center justify-center">
           <p className="text-gray-700 text-lg">Loading property details...</p>
         </div>
       </>
@@ -48,7 +50,7 @@ const PropertyDetails = () => {
     return (
       <>
         <Navbar />
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
+        <div className="min-h-screen flex items-center justify-center">
           <p className="text-red-600 text-lg">{error}</p>
         </div>
       </>
@@ -59,19 +61,17 @@ const PropertyDetails = () => {
     return (
       <>
         <Navbar />
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
+        <div className="min-h-screen flex items-center justify-center">
           <p className="text-gray-700 text-lg">Property not found.</p>
         </div>
       </>
     );
   }
 
-  // Determine if it's a residential property to show specific details
   const isResidential = ['Apartment', 'House', 'Condo'].includes(property.propertyType);
 
-  // Helper function to get icon for property type (optional, for display)
   const getPropertyTypeIcon = (type) => {
-    switch(type) {
+    switch (type) {
       case 'Apartment': return <Building className="h-5 w-5 text-gray-600" />;
       case 'House': return <Home className="h-5 w-5 text-gray-600" />;
       case 'Condo': return <Building className="h-5 w-5 text-gray-600" />;
@@ -83,6 +83,10 @@ const PropertyDetails = () => {
     }
   };
 
+  // ✅ Simple inquiry handler (can be replaced with API call or Context)
+  const handleAddToInquiry = () => {
+    alert("Property added to inquiry!");
+  };
 
   return (
     <>
@@ -95,34 +99,23 @@ const PropertyDetails = () => {
               <>
                 <img
                   src={property.images[currentImageIndex]}
-                  alt={`${property.title} - Image ${currentImageIndex + 1}`}
+                  alt={`${property.title}  ${currentImageIndex + 1}`}
                   className="w-full h-full object-cover"
                 />
                 {property.images.length > 1 && (
                   <>
                     <button
                       onClick={() => setCurrentImageIndex((prev) => (prev === 0 ? property.images.length - 1 : prev - 1))}
-                      className="absolute top-1/2 left-4 -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full z-10 hover:bg-opacity-75 transition-opacity"
-                      title="Previous image"
+                      className="absolute top-1/2 left-4 -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full z-10 hover:bg-opacity-75"
                     >
-                      <ArrowLeft/>
+                      <ArrowLeft />
                     </button>
                     <button
                       onClick={() => setCurrentImageIndex((prev) => (prev === property.images.length - 1 ? 0 : prev + 1))}
-                      className="absolute top-1/2 right-4 -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full z-10 hover:bg-opacity-75 transition-opacity"
-                      title="Next image"
+                      className="absolute top-1/2 right-4 -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full z-10 hover:bg-opacity-75"
                     >
-                      <ArrowRight/>
+                      <ArrowRight />
                     </button>
-                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-                      {property.images.map((_, index) => (
-                        <span
-                          key={index}
-                          className={`block w-2 h-2 rounded-full ${index === currentImageIndex ? 'bg-blue-500' : 'bg-gray-400'} cursor-pointer`}
-                          onClick={() => setCurrentImageIndex(index)}
-                        ></span>
-                      ))}
-                    </div>
                   </>
                 )}
               </>
@@ -153,14 +146,13 @@ const PropertyDetails = () => {
               <p className="ml-2">{property.propertyType} - {property.listingType}</p>
             </div>
 
-
             {/* Description */}
             <div className="mb-6">
               <h2 className="text-xl font-semibold text-gray-800 mb-2 border-b pb-2">Description</h2>
               <p className="text-gray-700 whitespace-pre-wrap">{property.description}</p>
             </div>
 
-            {/* Residential Details (Conditional) */}
+            {/* Residential Details */}
             {isResidential && (
               <div className="mb-6">
                 <h2 className="text-xl font-semibold text-gray-800 mb-2 border-b pb-2">Residential Features</h2>
@@ -198,7 +190,22 @@ const PropertyDetails = () => {
               </div>
             </div>
 
-            {/* You can add more sections here like amenities, year built, etc. */}
+            {/* ✅ Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 mt-6">
+              <button
+                onClick={() => navigate('/properties')}
+                className="w-full sm:w-1/2 bg-gray-200 text-gray-800 py-2 rounded-md hover:bg-gray-300 transition"
+              >
+                Back to Properties
+              </button>
+              <button
+                onClick={handleAddToInquiry}
+                className="w-full sm:w-1/2 bg-green-600 text-white py-2 rounded-md hover:bg-green-700 transition"
+              >
+                Add to Inquiry
+              </button>
+            </div>
+
           </div>
         </div>
       </div>

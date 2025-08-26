@@ -20,7 +20,7 @@ const PropertyCard = ({ property }) => {
           <p className="text-sm">{property.location}</p>
         </div>
         <div className="flex items-center text-green-700 font-bold text-lg mb-2">
-          <IndianRupeeIcon className="h-5 w-5 mr-1" />
+          {/* <IndianRupeeIcon className="h-5 w-5 mr-1" /> */}
           <p>{property.price}</p>
         </div>
         

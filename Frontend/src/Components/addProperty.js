@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, MapPin, IndianRupeeIcon, Ruler, Bed, Bath, Home, Building, LandPlot, Phone, User } from 'lucide-react';
 
-const AddPropertyModal = ({ isOpen, onClose, onAddProperty }) => {
+const AddPropertyModal = ({ isOpen, onClose, onAddProperty, loggedInUser }) => {
   const [formData, setFormData] = useState({
     title: '',
     listingType: 'For Sale',
@@ -22,6 +22,16 @@ const AddPropertyModal = ({ isOpen, onClose, onAddProperty }) => {
     contactPhone: '',
   });
   const [formErrors, setFormErrors] = useState({});
+
+  useEffect(() => {
+    if (isOpen && loggedInUser) {
+      setFormData((prev) => ({
+        ...prev,
+        contactName: loggedInUser.name || '',
+        contactPhone: loggedInUser.phone || '',
+      }));
+    }
+  }, [isOpen, loggedInUser]);
 
   const propertyTypes = [
     { value: 'Apartment', label: 'Apartment', icon: <Building className="h-4 w-4" /> },

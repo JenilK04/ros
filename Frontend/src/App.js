@@ -9,6 +9,7 @@ import Profile from './Components/profile';
 import PropertyDetails from './Components/propertyDetails';
 import ManageUsersPage from './Components/manageUsers-A';
 import UserDetails from './Components/userDetails';
+import PropertyInquiry from './Components/propertyInquiry';
 import {ProtectedAdmin,ProtectedUser} from './Components/ProtectedRoutes'; 
 
 function App() {
@@ -26,25 +27,31 @@ function App() {
           <Route
             path="/admin"
             element={
-              <ProtectedAdmin allowedRole="admin">
-                <Admin />
-              </ProtectedAdmin>
+              <ProtectedUser>
+                <ProtectedAdmin allowedRole="admin">
+                  <Admin />
+                </ProtectedAdmin>
+              </ProtectedUser>
             }
           />
           <Route
             path="/manageusers"
             element={
-              <ProtectedAdmin allowedRole="admin">
-                <ManageUsersPage />
-              </ProtectedAdmin>
+              <ProtectedUser>
+                <ProtectedAdmin allowedRole="admin">
+                  <ManageUsersPage />
+                </ProtectedAdmin>
+              </ProtectedUser>
             }
           />
           <Route
             path="/userdetails/:id"
             element={
-              <ProtectedAdmin allowedRole="admin">
-                <UserDetails />
-              </ProtectedAdmin>
+              <ProtectedUser>
+                <ProtectedAdmin allowedRole="admin">
+                  <UserDetails />
+                </ProtectedAdmin>
+              </ProtectedUser>
             }
           />
 
@@ -67,6 +74,14 @@ function App() {
           />
           {/* Add more protected user routes here */}
 
+          <Route
+            path="/property-inquiry"
+            element={
+              <ProtectedUser>
+                <PropertyInquiry />
+              </ProtectedUser>
+            }
+          />
         </Routes>
       </BrowserRouter>
     </div>

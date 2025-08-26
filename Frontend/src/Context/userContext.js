@@ -39,7 +39,8 @@ export const UserProvider = ({ children }) => {
       const response = await API.get('auth/user/me', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setUser(response.data); // ✅ instantly update with full profile
+      setUser(response.data);
+      console.log(response.data) // ✅ instantly update with full profile
     } catch (error) {
       console.error("Failed to fetch full user after login", error);
       setUser(userData); // fallback if backend only gave partial user

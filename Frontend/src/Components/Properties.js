@@ -3,18 +3,17 @@ import Navbar from './navbar';
 import PropertyCard from './propertyCard';
 import AddPropertyModal from './addProperty'; // Ensure this path is correct
 import { Plus } from 'lucide-react';
-import API from '../services/api'; // Import Axios
-
+import API from '../services/api'; 
+import { useUser } from '../Context/userContext'
 // Remove initialSampleProperties as we will fetch from the backend
 // const initialSampleProperties = [ ... ];
 
-const Properties = () => {
+const Properties = () => { // Get user info from context
+  const { user } = useUser(); // Get logged-in user info from context
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [properties, setProperties] = useState([]); // Initialize as empty array, data will come from API
   const [loading, setLoading] = useState(true);   // State for loading indicator
-  const [error, setError] = useState(null);     // State for error messages
-
-  ; // Your backend API URL
+  const [error, setError] = useState(null); 
 
   // Function to fetch properties from the backend
   const fetchProperties = async () => {
@@ -113,7 +112,8 @@ const Properties = () => {
       <AddPropertyModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onAddProperty={handleAddProperty} // Pass the API-calling function as prop
+        onAddProperty={handleAddProperty}
+        loggedInUser={{ name: `${user.firstName} ${user.lastName}`, phone: user?.phone }}
       />
     </>
   );
