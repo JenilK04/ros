@@ -1,9 +1,9 @@
 // src/components/PropertyCard.jsx
 import React from 'react';
-import { MapPin, IndianRupeeIcon, Phone, User } from 'lucide-react';
-import { Link } from 'react-router-dom'; // <--- Import Link
+import { MapPin, Phone, User, Trash2 } from 'lucide-react'; // Added Trash2 icon
+import { Link } from 'react-router-dom';
 
-const PropertyCard = ({ property }) => {
+const PropertyCard = ({ property, onDelete }) => {
   return (
     <div
       className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-100"
@@ -20,11 +20,9 @@ const PropertyCard = ({ property }) => {
           <p className="text-sm">{property.location}</p>
         </div>
         <div className="flex items-center text-green-700 font-bold text-lg mb-2">
-          {/* <IndianRupeeIcon className="h-5 w-5 mr-1" /> */}
           <p>{property.price}</p>
         </div>
         
-        {/* Display basic contact details on card if available (optional) */}
         {property.contactName && (
           <div className="flex items-center text-gray-700 text-sm mb-1">
             <User className="h-4 w-4 mr-2 text-gray-500" />
@@ -40,13 +38,23 @@ const PropertyCard = ({ property }) => {
           </div>
         )}
 
-        {/* Use Link component for navigation */}
+        {/* View Details button */}
         <Link 
-          to={`/properties/${property.id}`} // <--- Link to the new details route
-          className="mt-4 w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition duration-200 block text-center"
+          to={`/properties/${property.id}`}
+          className="mt-2 w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition duration-200 block text-center"
         >
           View Details
         </Link>
+
+        {/* Delete button (optional, only if onDelete is passed) */}
+        {onDelete && (
+          <button
+            onClick={onDelete}
+            className="mt-2 w-full flex items-center justify-center gap-2 bg-red-600 text-white py-2 rounded-md hover:bg-red-700 transition duration-200"
+          >
+          <Trash2 className="h-4 w-4" /> Delete
+          </button>
+        )}
       </div>
     </div>
   );

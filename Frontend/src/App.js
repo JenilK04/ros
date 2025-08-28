@@ -9,7 +9,6 @@ import Profile from './Components/profile';
 import PropertyDetails from './Components/propertyDetails';
 import ManageUsersPage from './Components/manageUsers-A';
 import UserDetails from './Components/userDetails';
-import PropertyInquiry from './Components/propertyInquiry';
 import {ProtectedAdmin,ProtectedUser} from './Components/ProtectedRoutes'; 
 
 function App() {
@@ -73,15 +72,6 @@ function App() {
             }
           />
           {/* Add more protected user routes here */}
-
-          <Route
-            path="/property-inquiry"
-            element={
-              <ProtectedUser>
-                <PropertyInquiry />
-              </ProtectedUser>
-            }
-          />
         </Routes>
       </BrowserRouter>
     </div>

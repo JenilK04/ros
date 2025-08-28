@@ -4,25 +4,32 @@ import API from '../services/api';
 const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    // ⬅️ Load from localStorage immediately
+    const savedUser = localStorage.getItem("user");
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
   const [loading, setLoading] = useState(true);
 
-  // 🔹 Fetch user on app load/refresh
+  // 🔹 Fetch latest user from backend on app load/refresh
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const token = localStorage.getItem('token');
         if (token) {
           const response = await API.get('auth/user/me', {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            headers: { Authorization: `Bearer ${token}` },
           });
-          setUser(response.data); // ✅ full profile from API
+          setUser(response.data);
+          localStorage.setItem("user", JSON.stringify(response.data)); // ✅ keep updated
+          localStorage.setItem("role", response.data.role);
         }
       } catch (error) {
         console.error('Failed to fetch user data', error);
         localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('role');
+        setUser(null);
       } finally {
         setLoading(false);
       }
@@ -32,24 +39,26 @@ export const UserProvider = ({ children }) => {
 
   // 🔹 Called after successful login
   const loginUser = async (userData, token) => {
-    localStorage.setItem('token', token);
-    localStorage.setItem('role', userData.role);
-
     try {
       const response = await API.get('auth/user/me', {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUser(response.data);
-      console.log(response.data) // ✅ instantly update with full profile
+      localStorage.setItem("user", JSON.stringify(response.data));
+      localStorage.setItem("role", response.data.role);
     } catch (error) {
       console.error("Failed to fetch full user after login", error);
       setUser(userData); // fallback if backend only gave partial user
+      localStorage.setItem("user", JSON.stringify(userData));
+      localStorage.setItem("role", userData.role || "user");
     }
+    localStorage.setItem("token", token);
   };
 
   const logoutUser = () => {
     setUser(null);
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     localStorage.removeItem('role');
   };
 

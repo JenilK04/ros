@@ -10,9 +10,7 @@ const PropertySchema = new mongoose.Schema({
     street: { type: String, required: true, trim: true },
     city: { type: String, required: true, trim: true },
     state: { type: String, required: true, trim: true },
-    zip: { type: String, required: true, trim: true },
-    country: { type: String, required: true, trim: true },
-  },
+    zip: { type: String, required: true, trim: true },  },
   description: { type: String, required: true },
   // Residential specific fields (optional based on propertyType)
   bedrooms: { type: Number, min: 0, default: 0 },
@@ -23,7 +21,9 @@ const PropertySchema = new mongoose.Schema({
   contactName: { type: String, required: true, trim: true },
   contactPhone: { type: String, required: true, trim: true },
   images: [{ type: String }],
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  inquiredBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User', default: [] }]
 });
 
 module.exports = mongoose.model('Property', PropertySchema);

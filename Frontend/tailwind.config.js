@@ -10,6 +10,8 @@ export default {
     "./src/Components/addProperty.js",
     "./src/Components/propertyDetails.js",
     "./src/Components/manageUsers-A.js",
+    "./src/Components/userDetails.js",
+    "./src/Components/propertyCard.js",
     "./src/Components/userDetails.js"
   ],
   theme: {
