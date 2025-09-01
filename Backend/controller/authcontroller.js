@@ -2,6 +2,7 @@ const User = require('../models/Users');
 const Admin = require('../models/Admin')
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const{validationResult} = require('express-validator'); 
 
 const register = async (req, res) => {
   try {
@@ -96,9 +97,41 @@ const user = async (req, res) => {
     }
 }
 
+const editUser = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const { photo, ...updatedData } = req.body;
+
+    // Handle photo
+    if (photo) {
+      updatedData.photo = photo; // Base64 string
+    } else if (photo === null) {
+      updatedData.photo = null;
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $set: updatedData },
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({
+      message: 'Profile updated successfully!',
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
 
 module.exports = {
   register,
   login,
-  user
+  user,
+  editUser
 };

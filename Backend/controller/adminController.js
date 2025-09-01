@@ -1,6 +1,6 @@
 const User = require('../models/Users');
-const Admin = require('../models/Admin');
 const mongoose = require('mongoose')
+
 
 const getAllUsers = async (req, res) => {
   try {
@@ -8,7 +8,7 @@ const getAllUsers = async (req, res) => {
     const allUsers = await User.find().select('-password'); 
     
     // Fetch all users from the Admin collection, also excluding the password
-    const allAdmins = await Admin.find().select('-password'); 
+    // const allAdmins = await Admin.find().select('-password'); 
 
     // Combine the two lists into a single array
     // We add a 'role' property to each object to easily identify the user type on the frontend
@@ -16,10 +16,6 @@ const getAllUsers = async (req, res) => {
       ...allUsers.map(user => ({
         ...user.toObject(),
         role: user.userType // Assuming your User model has a 'userType' field for Agent, Buyer, Seller, etc.
-      })),
-      ...allAdmins.map(admin => ({
-        ...admin.toObject(),
-        role: 'admin'
       }))
     ];
 
@@ -56,4 +52,25 @@ const isAdmin = async (req, res) => {
   }
 };
 
-module.exports = { getAllUsers, isAdmin };
+const deleteUser = async(req,res)=>{
+  const userId = req.params.id;
+
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    return res.status(400).json({ msg: 'Invalid user ID format.' });
+  }
+
+  try {
+    const deletedUser = await User.findByIdAndDelete(userId);
+
+    if (!deletedUser) {
+      return res.status(404).json({ msg: 'User not found.' });
+    }
+
+    res.json({ msg: 'User deleted successfully.' });
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    res.status(500).json({ msg: 'Server error', error: error.message });
+  }
+}
+
+module.exports = { getAllUsers, isAdmin, deleteUser };

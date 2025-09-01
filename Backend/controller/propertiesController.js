@@ -103,27 +103,6 @@ const postProperty = async (req, res) => {
 
 
 // ✅ Add inquiry
-const addInquiry = async (req, res) => {
-  try {
-    const property = await Property.findById(req.params.id);
-    if (!property) return res.status(404).json({ msg: "Property not found" });
-
-    // Ensure inquiredBy exists
-    property.inquiredBy = property.inquiredBy || [];
-
-    if (property.inquiredBy.includes(req.user.id)) {
-      return res.status(400).json({ msg: "Already inquired" });
-    }
-
-    property.inquiredBy.push(req.user.id);
-    await property.save();
-
-    res.json({ msg: "Inquiry added successfully", property });
-  } catch (error) {
-    console.error("Error adding inquiry:", error);
-    res.status(500).json({ msg: "Server error", error: error.message });
-  }
-};
 
 // ✅ Get properties inquired by the current user
 const deleteProperty = async (req, res) => {
@@ -144,6 +123,28 @@ const deleteProperty = async (req, res) => {
   } catch (err) {
     console.error('Delete Property Error:', err);
     res.status(500).json({ msg: 'Server error', error: err.message });
+  }
+};
+
+const addInquiry = async (req, res) => {
+  try {
+    const property = await Property.findById(req.params.id);
+    if (!property) return res.status(404).json({ msg: "Property not found" });
+
+    // Ensure inquiredBy exists
+    property.inquiredBy = property.inquiredBy || [];
+
+    if (property.inquiredBy.includes(req.user.id)) {
+      return res.status(400).json({ msg: "Already inquired" });
+    }
+
+    property.inquiredBy.push(req.user.id);
+    await property.save();
+
+    res.json({ msg: "Inquiry added successfully", property });
+  } catch (error) {
+    console.error("Error adding inquiry:", error);
+    res.status(500).json({ msg: "Server error", error: error.message });
   }
 };
 
