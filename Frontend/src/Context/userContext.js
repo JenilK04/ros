@@ -5,13 +5,12 @@ const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
-    // ⬅️ Load from localStorage immediately
     const savedUser = localStorage.getItem("user");
     return savedUser ? JSON.parse(savedUser) : null;
   });
   const [loading, setLoading] = useState(true);
 
-  // 🔹 Fetch latest user from backend on app load/refresh
+  // Fetch latest user from backend on app load/refresh
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -21,7 +20,7 @@ export const UserProvider = ({ children }) => {
             headers: { Authorization: `Bearer ${token}` },
           });
           setUser(response.data);
-          localStorage.setItem("user", JSON.stringify(response.data)); // ✅ keep updated
+          localStorage.setItem("user", JSON.stringify(response.data));
           localStorage.setItem("role", response.data.role);
         }
       } catch (error) {
@@ -37,7 +36,7 @@ export const UserProvider = ({ children }) => {
     fetchUser();
   }, []);
 
-  // 🔹 Called after successful login
+  // Called after successful login
   const loginUser = async (userData, token) => {
     try {
       const response = await API.get('auth/user/me', {
@@ -48,7 +47,7 @@ export const UserProvider = ({ children }) => {
       localStorage.setItem("role", response.data.role);
     } catch (error) {
       console.error("Failed to fetch full user after login", error);
-      setUser(userData); // fallback if backend only gave partial user
+      setUser(userData);
       localStorage.setItem("user", JSON.stringify(userData));
       localStorage.setItem("role", userData.role || "user");
     }
@@ -62,8 +61,14 @@ export const UserProvider = ({ children }) => {
     localStorage.removeItem('role');
   };
 
+  // ✅ Add updateUser function
+  const updateUser = (updatedData) => {
+    setUser(updatedData);
+    localStorage.setItem("user", JSON.stringify(updatedData));
+  };
+
   return (
-    <UserContext.Provider value={{ user, loginUser, logoutUser, loading }}>
+    <UserContext.Provider value={{ user, loginUser, logoutUser, updateUser, loading }}>
       {children}
     </UserContext.Provider>
   );

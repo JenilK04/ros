@@ -50,6 +50,7 @@ const PropertyDetails = () => {
 
   useEffect(() => {
     if (id) fetchPropertyDetails();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, user?._id]);
 
   // Inquiry toggle

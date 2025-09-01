@@ -1,7 +1,7 @@
 import{ useState, useEffect } from 'react';
 import API from '../services/api';
 import Navbar from './navbar';
-import { UserPlus, Search, Edit, Trash2} from 'lucide-react';
+import {Search,Trash2} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const ManageUsersPage = () => {
@@ -29,6 +29,19 @@ const ManageUsersPage = () => {
     };
     fetchUsers();
   }, []);
+
+  const handleDeleteUser = async (userId) => {
+    if (!window.confirm('Are you sure you want to delete this user?')) return;
+
+    try {
+      await API.delete(`/admin/users/${userId}`);
+      setUsers(users.filter((user) => user._id !== userId)); // remove from state
+      alert('User deleted successfully');
+    } catch (err) {
+      console.error('Delete Error:', err);
+      alert('Failed to delete user');
+    }
+  };
 
   if (loading) {
     return (
@@ -65,10 +78,6 @@ const ManageUsersPage = () => {
           {/* Page Header and Controls */}
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-bold text-gray-800">Manage Users</h1>
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-md flex items-center space-x-2 hover:bg-blue-700 transition">
-              <UserPlus className="h-5 w-5" />
-              <span>Add New User</span>
-            </button>
           </div>
 
           {/* Search and Filter Section */}
@@ -115,8 +124,7 @@ const ManageUsersPage = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button className="text-indigo-600 hover:text-indigo-900 mr-2"><Edit className="h-4 w-4" /></button>
-                      <button className="text-red-600 hover:text-red-900"><Trash2 className="h-4 w-4" /></button>
+                        <button onClick={() => handleDeleteUser(user._id)} className="text-red-600 hover:text-red-900"><Trash2 className="h-4 w-4" /></button>
                       {/* You'd have a function to call for each action */}
                     </td>
                   </tr>

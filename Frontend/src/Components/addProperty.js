@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, MapPin, IndianRupeeIcon, Ruler, Bed, Bath, Home, Building, LandPlot, Phone, Image as ImageIcon } from 'lucide-react';
+import { X, MapPin, IndianRupeeIcon, Ruler, Home, Building, LandPlot, Phone, Image as ImageIcon } from 'lucide-react';
 
 const AddPropertyModal = ({
   isOpen,
