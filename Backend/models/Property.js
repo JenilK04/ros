@@ -20,6 +20,7 @@ const PropertySchema = new mongoose.Schema({
    // Images will be stored as an array of URLs (strings)
   contactName: { type: String, required: true, trim: true },
   contactPhone: { type: String, required: true, trim: true },
+  contactEmail: { type: String, required: true, trim: true },
   images: [{ type: String }],
   createdAt: { type: Date, default: Date.now },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
