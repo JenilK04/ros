@@ -1,6 +1,6 @@
 // src/components/PropertyCard.jsx
 import React from 'react';
-import { MapPin, Phone, User, Trash2 } from 'lucide-react'; // Added Trash2 icon
+import { MapPin, Trash2 } from 'lucide-react'; // Added Trash2 icon
 import { Link } from 'react-router-dom';
 
 const PropertyCard = ({ property, onDelete }) => {
@@ -23,7 +23,7 @@ const PropertyCard = ({ property, onDelete }) => {
           <p>{property.price}</p>
         </div>
         
-        {property.contactName && (
+        {/* {property.contactName && (
           <div className="flex items-center text-gray-700 text-sm mb-1">
             <User className="h-4 w-4 mr-2 text-gray-500" />
             <p>{property.contactName}</p>
@@ -36,7 +36,7 @@ const PropertyCard = ({ property, onDelete }) => {
               {property.contactPhone}
             </a>
           </div>
-        )}
+        )} */}
 
         {/* View Details button */}
         <Link 

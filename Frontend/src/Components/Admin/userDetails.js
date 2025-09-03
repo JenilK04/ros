@@ -1,9 +1,9 @@
 // src/components/UserDetails.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Navbar from './navbar';
+import Navbar from '../User/navbar';
 import { Building, User, Mail, Phone, MapPin } from 'lucide-react';
-import API from '../services/api';
+import API from '../../services/api';
 
 const UserDetails = () => {
     const { id } = useParams();

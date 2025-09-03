@@ -1,6 +1,6 @@
 import React from 'react';
 import Navbar from './navbar';
-import { useUser } from '../Context/userContext';
+import { useUser } from '../../Context/userContext';
 import {Users, ClipboardCheck, Calendar, MessageCircle } from 'lucide-react';
 
 const Dashboard = () => {

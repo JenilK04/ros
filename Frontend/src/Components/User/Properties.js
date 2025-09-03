@@ -4,8 +4,8 @@ import Navbar from './navbar';
 import PropertyCard from './propertyCard';
 import AddPropertyModal from './addProperty';
 import { Plus } from 'lucide-react';
-import API from '../services/api';
-import { useUser } from '../Context/userContext';
+import API from '../../services/api';
+import { useUser } from '../../Context/userContext';
 
 const Properties = () => {
   const { user } = useUser(); 
@@ -102,7 +102,7 @@ const Properties = () => {
   return (
     <>
       <Navbar />
-      <div className="p-4 bg-gradient-to-br from-blue-50 via-white to-green-50 min-h-screen">
+      <div className="p-4 bg-gradient-to-br from-blue-100 via-white to-green-100 min-h-screen">
         <div className="max-w-7xl mx-auto py-8">
           <h1 className="text-3xl text-gray-800 font-extrabold mb-8 text-center">Available Properties</h1>
 
@@ -126,8 +126,9 @@ const Properties = () => {
                       location: `${property.address?.city}, ${property.address?.state}`,
                       price: `₹${parseFloat(property.price || 0).toLocaleString('en-IN')}`,
                       image: property.images?.[0] || 'https://via.placeholder.com/600x400',
-                      contactName: property.contactName || '',
-                      contactPhone: property.contactPhone || '',
+                      contactName: property.contactName || 'Not Added',
+                      contactPhone: property.contactPhone || 'Not Added',
+                      contactEmail: property.contactEmail || 'Not Added',
                     }}
                     onDelete={() => handleDeleteProperty(property._id)}
                     onEdit={() => {
@@ -187,7 +188,7 @@ const Properties = () => {
         }}
         onAddProperty={handleAddProperty}
         onUpdateProperty={handleUpdateProperty}
-        loggedInUser={{ name: `${user?.firstName || ''} ${user?.lastName || ''}`, phone: user?.phone || '' }}
+        loggedInUser={{ name: `${user?.firstName || ''} ${user?.lastName || ''}`, phone: user?.phone || '', email: user?.email || '' }}
         editProperty={editProperty} // Pass property to edit
       />
     </>

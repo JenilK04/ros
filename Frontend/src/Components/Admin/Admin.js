@@ -1,5 +1,5 @@
 import React from 'react';
-import Navbar from './navbar';
+import Navbar from '../User/navbar';
 import { Settings, BarChart2, UserCog } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 

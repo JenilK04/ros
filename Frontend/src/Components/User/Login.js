@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Lock, Mail, Eye, EyeOff, Building } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import API from '../services/api';
-import { useUser } from '../Context/userContext';  // ⬅️ import context
+import API from '../../services/api';
+import { useUser } from '../../Context/userContext';  // ⬅️ import context
 
 const Login = () => {
   const [email, setEmail] = useState('');

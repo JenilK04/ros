@@ -26,6 +26,7 @@ const AddPropertyModal = ({
     imagePreviews: [],
     contactName: loggedInUser?.name || '',
     contactPhone: loggedInUser?.phone || '',
+    contactEmail: loggedInUser?.email || ''
   };
 
   const [formData, setFormData] = useState(initialFormData);
@@ -52,6 +53,7 @@ const AddPropertyModal = ({
       imagePreviews: editProperty?.images || [],
       contactName: editProperty?.contactName || loggedInUser?.name || '',
       contactPhone: editProperty?.contactPhone || loggedInUser?.phone || '',
+      contactEmail: editProperty?.contactEmail || loggedInUser?.email || ''
     });
 
     setFormErrors({});
@@ -126,6 +128,8 @@ const AddPropertyModal = ({
     if (!formData.contactPhone.trim()) errors.contactPhone = 'Contact Phone is required.';
     if (formData.contactPhone.trim() && !/^\d{10,15}$/.test(formData.contactPhone.trim())) {
       errors.contactPhone = 'Please enter a valid phone number (10-15 digits).';
+    if (!formData.contactEmail.trim()) errors.contactEmail = 'Contact Email is required.';
+    else if (!/\S+@\S+\.\S+/.test(formData.contactEmail)) errors.contactEmail = 'Invalid email address.';
     }
 
     if (['Apartment', 'House', 'Condo'].includes(formData.propertyType)) {
@@ -342,14 +346,14 @@ const AddPropertyModal = ({
               <Phone className="h-6 w-6 text-purple-500" /> Contact Information
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {['contactName','contactPhone'].map((field) => (
+              {['contactName','contactPhone','contactEmail'].map((field) => (
                 <div key={field}>
                   <label htmlFor={field} className="block text-sm font-medium text-gray-700 mb-1">
-                    {field === 'contactName' ? 'Contact Name' : 'Contact Phone'} <span className="text-red-500">*</span>
+                    {field === 'contactName' ? 'Contact Name' : field === 'contactPhone' ? 'Contact Phone' : 'Contact Email'} <span className="text-red-500">*</span>
                   </label>
                   <input
-                    type={field==='contactPhone'?'tel':'text'}
-                    id={field}
+                    type={field==='contactPhone'?'tel': field==='contactEmail'?'email':'text'}
+                    id={field}  
                     name={field}
                     value={formData[field]}
                     onChange={handleChange}

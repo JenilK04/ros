@@ -1,6 +1,6 @@
 import{ useState, useEffect } from 'react';
-import API from '../services/api';
-import Navbar from './navbar';
+import API from '../../services/api';
+import Navbar from '../User/navbar';
 import {Search,Trash2} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 

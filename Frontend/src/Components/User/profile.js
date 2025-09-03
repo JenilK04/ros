@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useUser } from '../Context/userContext';
+import { useUser } from '../../Context/userContext';
 import Navbar from './navbar';
 import { Mail, Phone, User, MapPin, BadgeCheck, BriefcaseBusiness, Save, X, Edit2, Camera, Trash2 } from 'lucide-react';
 import Select from 'react-select';
-import API from '../services/api';
+import API from '../../services/api';
 
 const userTypes = [
   { value: 'buyer', label: 'Property Buyer' },

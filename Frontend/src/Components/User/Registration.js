@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Building, Home, User, Mail, Phone, MapPin, Lock, Eye, EyeOff, X } from 'lucide-react';
-import API from '../services/api'; // Assuming this is correctly configured for axios
+import API from '../../services/api'; // Assuming this is correctly configured for axios
 import { useNavigate } from 'react-router-dom';
 
 const Registration = () => {

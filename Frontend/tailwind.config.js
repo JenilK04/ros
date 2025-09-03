@@ -1,18 +1,18 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: ["./src/Components/Login.js",
-    "./src/Components/Dashboard.js",
-    "./src/Components/Admin.js",
-    "./src/Components/Registration.js",
-    "./src/Components/navbar.js",
-    "./src/Components/profile.js",
-    "./src/Components/Properties.js",
-    "./src/Components/addProperty.js",
-    "./src/Components/propertyDetails.js",
-    "./src/Components/manageUsers-A.js",
-    "./src/Components/userDetails.js",
-    "./src/Components/propertyCard.js",
-    "./src/Components/userDetails.js"
+  content: ["./src/Components/User/Login.js",
+    "./src/Components/User/Dashboard.js",
+    "./src/Components/Admin/Admin.js",
+    "./src/Components/User/Registration.js",
+    "./src/Components/User/navbar.js",
+    "./src/Components/User/profile.js",
+    "./src/Components/User/Properties.js",
+    "./src/Components/User/addProperty.js",
+    "./src/Components/User/propertyDetails.js",
+    "./src/Components/Admin/manageUsers-A.js",
+    "./src/Components/Admin/userDetails.js",
+    "./src/Components/User/propertyCard.js",
+    "./src/Components/User/userDetails.js"
   ],
   theme: {
     extend: {},

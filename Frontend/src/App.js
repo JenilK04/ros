@@ -1,14 +1,14 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './App.css';
-import Login from './Components/Login';
-import Dashboard from './Components/Dashboard';
-import Admin from './Components/Admin';
-import Registration from './Components/Registration';
-import Properties from './Components/Properties';
-import Profile from './Components/profile';
-import PropertyDetails from './Components/propertyDetails';
-import ManageUsersPage from './Components/manageUsers-A';
-import UserDetails from './Components/userDetails';
+import Login from './Components/User/Login';
+import Dashboard from './Components/User/Dashboard';
+import Admin from './Components/Admin/Admin';
+import Registration from './Components/User/Registration';
+import Properties from './Components/User/Properties';
+import Profile from './Components/User/profile';
+import PropertyDetails from './Components/User/propertyDetails';
+import ManageUsersPage from './Components/Admin/manageUsers-A';
+import UserDetails from './Components/Admin/userDetails';
 import {ProtectedAdmin,ProtectedUser} from './Components/ProtectedRoutes'; 
 
 function App() {

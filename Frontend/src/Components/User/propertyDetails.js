@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import API from '../services/api';
-import Navbar from './navbar';
+import API from '../../services/api';
+// Navbar is no longer needed here if you are using the Layout component
 import AddPropertyModal from './addProperty';
 import {
   MapPin, IndianRupeeIcon, Bed, Bath, Ruler,
-  Building, Home, LandPlot,
-  ArrowLeft, ArrowRight, User, Phone
+  Building, Home, LandPlot, Trash2, // <-- Added Trash2 icon
+  ArrowLeft, ArrowRight, User, Phone,
+  Mail
 } from 'lucide-react';
-import { useUser } from '../Context/userContext';
+import { useUser } from '../../Context/userContext';
 
 const PropertyDetails = () => {
   const { id } = useParams();
@@ -17,12 +18,14 @@ const PropertyDetails = () => {
 
   const [property, setProperty] = useState(null);
   const [loading, setLoading] = useState(true);
+  // ... (rest of your state variables are the same)
   const [error, setError] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [inquired, setInquired] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Fetch property details
+
+  // ... (fetchPropertyDetails, handleInquiryToggle, handleUpdateProperty functions are the same)
   const fetchPropertyDetails = async () => {
     setLoading(true);
     setError(null);
@@ -34,7 +37,6 @@ const PropertyDetails = () => {
       const fetchedProperty = response.data.property || response.data;
       setProperty(fetchedProperty);
 
-      // mark inquired if user's ID exists in inquiredBy
       if (fetchedProperty.inquiredBy?.includes(user?._id)) {
         setInquired(true);
       } else {
@@ -53,7 +55,6 @@ const PropertyDetails = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, user?._id]);
 
-  // Inquiry toggle
   const handleInquiryToggle = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -76,7 +77,6 @@ const PropertyDetails = () => {
     }
   };
 
-  // Update property after editing
   const handleUpdateProperty = async (propertyId, updatedPropertyData) => {
     try {
       const token = localStorage.getItem('token');
@@ -84,7 +84,6 @@ const PropertyDetails = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // Update state with returned property or merge changes
       setProperty(response.data.property || { ...property, ...updatedPropertyData });
       setIsModalOpen(false);
       alert('Property updated successfully!');
@@ -94,9 +93,25 @@ const PropertyDetails = () => {
     }
   };
 
-  const isOwner = property?.userId === user?._id;
-  const isResidential = ['Apartment', 'House', 'Condo'].includes(property?.propertyType);
+  // ✅ NEW: Function for admin to delete a property
+  const handleDeleteProperty = async () => {
+    if (window.confirm('Are you sure you want to delete this property permanently? This action cannot be undone.')) {
+      try {
+        const token = localStorage.getItem('token');
+        await API.delete(`/properties/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        alert('Property deleted successfully!');
+        navigate('/properties'); // Redirect to properties list after deletion
+      } catch (err) {
+        console.error('Failed to delete property:', err);
+        alert(err.response?.data?.msg || 'Failed to delete property.');
+      }
+    }
+  };
 
+
+  // ... (getPropertyTypeIcon is the same)
   const getPropertyTypeIcon = (type) => {
     switch (type) {
       case 'Apartment': return <Building className="h-5 w-5 text-gray-600" />;
@@ -107,41 +122,36 @@ const PropertyDetails = () => {
     }
   };
 
+  const isOwner = property?.userId === user?._id;
+  const isAdmin = user?.role === 'admin'; // <-- Added admin check for convenience
+  const isResidential = ['Apartment', 'House', 'Condo'].includes(property?.propertyType);
+
   if (loading) return (
-    <>
-      <Navbar />
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-700 text-lg">Loading property details...</p>
-      </div>
-    </>
+    // Note: No <Navbar /> needed if using Layout component
+    <div className="min-h-screen flex items-center justify-center text-white text-lg">
+        Loading property details...
+    </div>
   );
 
   if (error) return (
-    <>
-      <Navbar />
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-red-600 text-lg">{error}</p>
-      </div>
-    </>
+    <div className="min-h-screen flex items-center justify-center text-red-400 text-lg">
+      {error}
+    </div>
   );
 
   if (!property) return (
-    <>
-      <Navbar />
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-700 text-lg">Property not found.</p>
-      </div>
-    </>
+    <div className="min-h-screen flex items-center justify-center text-white text-lg">
+      Property not found.
+    </div>
   );
 
   return (
-    <>
-      <Navbar />
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+    // The Layout component provides the background, so we remove styling here
+    <div className="py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-100 via-white to-green-100">
+      <div className="max-w-4xl mx-auto bg-white/90 backdrop-blur-sm rounded-xl shadow-2xl overflow-hidden border border-gray-200/50">
 
-          {/* Image Carousel */}
-          <div className="relative h-96 bg-gray-200">
+        {/* ... (Image Carousel is the same) ... */}
+        <div className="relative h-96 bg-gray-200">
             {property.images?.length > 0 ? (
               <>
                 <img
@@ -173,34 +183,27 @@ const PropertyDetails = () => {
             )}
           </div>
 
-          <div className="p-8">
-            {/* Title & Price */}
-            <div className="flex justify-between items-start mb-4">
+        <div className="p-8">
+          {/* ... (Title, Price, Address, Description, etc. are the same) ... */}
+          <div className="flex justify-between items-start mb-4">
               <h1 className="text-3xl font-extrabold text-gray-900">{property.title}</h1>
               <div className="flex items-center text-green-700 font-bold text-3xl">
                 <IndianRupeeIcon className="h-7 w-7 mr-1" />
                 {parseFloat(property.price).toLocaleString('en-IN')}
               </div>
             </div>
-
-            {/* Address */}
             <div className="flex items-center text-gray-600 text-lg mb-4">
               <MapPin className="h-5 w-5 mr-2 text-blue-500" />
               <p>{property.address?.street}, {property.address?.city}, {property.address?.state} - {property.address?.zip}</p>
             </div>
-
             <div className="flex items-center text-gray-600 text-base mb-6">
               {getPropertyTypeIcon(property.propertyType)}
               <p className="ml-2">{property.propertyType} - {property.listingType}</p>
             </div>
-
-            {/* Description */}
             <div className="mb-6">
               <h2 className="text-xl font-semibold text-gray-800 mb-2 border-b pb-2">Description</h2>
               <p className="text-gray-700 whitespace-pre-wrap">{property.description}</p>
             </div>
-
-            {/* Residential Details */}
             {isResidential && (
               <div className="mb-6">
                 <h2 className="text-xl font-semibold text-gray-800 mb-2 border-b pb-2">Residential Features</h2>
@@ -221,63 +224,76 @@ const PropertyDetails = () => {
               </div>
             )}
 
-            {/* Contact Info */}
-            {inquired && property.contactName && property.contactPhone && (
-              <div className="mb-6">
-                <h2 className="text-xl font-semibold text-gray-800 mb-2 border-b pb-2">Contact Information</h2>
-                <div className="flex items-center text-gray-700 mb-1">
-                  <User className="h-5 w-5 mr-2 text-gray-500" />
-                  <span>{property.contactName}</span>
-                </div>
-                <div className="flex items-center text-gray-700 mb-1">
-                  <Phone className="h-5 w-5 mr-2 text-gray-500" />
-                  <a href={`tel:${property.contactPhone}`} className="hover:underline text-blue-600">{property.contactPhone}</a>
-                </div>
+          {/* ✅ UPDATED: Contact Info now visible to admin */}
+          {(inquired || isAdmin || isOwner) && property.contactName && property.contactPhone && property.contactEmail && (
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold text-gray-800 mb-2 border-b pb-2">Contact Information</h2>
+              <div className="flex items-center text-gray-700 mb-1">
+                <User className="h-5 w-5 mr-2 text-gray-500" />
+                <span>{property.contactName}</span>
               </div>
+              <div className="flex items-center text-gray-700 mb-1">
+                <Phone className="h-5 w-5 mr-2 text-gray-500" />
+                <a href={`tel:${property.contactPhone}`} className="hover:underline text-blue-600">{property.contactPhone}</a>
+              </div>
+              <div className="flex items-center text-gray-700 mb-1">
+                <Mail className="h-5 w-5 mr-2 text-gray-500" />
+                <a href={`mailto:${property.contactEmail}`} className="hover:underline text-blue-600">{property.contactEmail}</a>
+              </div>
+            </div>
+          )}
+
+          {/* ✅ UPDATED: Action Buttons with Admin Delete */}
+          <div className="flex flex-col sm:flex-row gap-4 mt-6">
+            <button
+              onClick={() => navigate('/properties')}
+              className="w-full sm:w-auto flex-grow bg-gray-200 text-gray-800 py-2 rounded-md hover:bg-gray-300 transition"
+            >
+              Back to Properties
+            </button>
+
+            {isOwner ? (
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="w-full sm:w-auto flex-grow bg-yellow-600 text-white py-2 rounded-md hover:bg-yellow-700 transition"
+              >
+                Edit Property
+              </button>
+            ) : !isAdmin && ( // Hide inquiry button for admin
+              <button
+                onClick={handleInquiryToggle}
+                className={`w-full sm:w-auto flex-grow py-2 rounded-md text-white transition duration-200
+                  ${inquired ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'}`}
+              >
+                {inquired ? 'Remove from Inquiry' : 'Add to Inquiry'}
+              </button>
             )}
 
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 mt-6">
+            {/* ✅ NEW: Admin Delete Button */}
+            {isAdmin && (
               <button
-                onClick={() => navigate('/properties')}
-                className="w-full sm:w-1/2 bg-gray-200 text-gray-800 py-2 rounded-md hover:bg-gray-300 transition"
+                onClick={handleDeleteProperty}
+                className="w-full sm:w-auto flex-grow bg-red-600 text-white py-2 rounded-md hover:bg-red-700 transition flex items-center justify-center gap-2"
               >
-                Back to Properties
+                <Trash2 className="h-5 w-5" />
+                Delete Property
               </button>
-
-              {isOwner ? (
-                <button
-                  onClick={() => setIsModalOpen(true)}
-                  className="w-full sm:w-1/2 bg-yellow-600 text-white py-2 rounded-md hover:bg-yellow-700 transition"
-                >
-                  Edit Property
-                </button>
-              ) : (
-                <button
-                  onClick={handleInquiryToggle}
-                  className={`w-full sm:w-1/2 py-2 rounded-md text-white transition duration-200
-                    ${inquired ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'}`}
-                >
-                  {inquired ? 'Remove from Inquiry' : 'Add to Inquiry'}
-                </button>
-              )}
-            </div>
-
+            )}
           </div>
         </div>
       </div>
-
-      {/* Edit Property Modal */}
+      
+      {/* ... (Modal is the same) ... */}
       {isOwner && property && (
         <AddPropertyModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           editProperty={property}
           onUpdateProperty={handleUpdateProperty}
-          loggedInUser={{ name: `${user?.firstName || ''} ${user?.lastName || ''}`, phone: user?.phone || '' }}
+          loggedInUser={{ name: `${user?.firstName || ''} ${user?.lastName || ''}`, phone: user?.phone || '', email: user?.email || '' }}
         />
       )}
-    </>
+    </div>
   );
 };
 

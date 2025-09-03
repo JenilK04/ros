@@ -1,6 +1,6 @@
 import { useNavigate, NavLink } from 'react-router-dom';
 import { LogOut, Building } from 'lucide-react';
-import { useUser } from '../Context/userContext'; // ⬅️ import your context
+import { useUser } from '../../Context/userContext'; // ⬅️ import your context
 
 const Navbar = () => {
   const navigate = useNavigate();
