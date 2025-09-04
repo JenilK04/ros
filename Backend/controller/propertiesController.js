@@ -53,12 +53,12 @@ const postProperty = async (req, res) => {
   try {
     const {
       title, listingType, propertyType, price,
-      street, city, state, zip, country,
-      description, bedrooms, bathrooms, area, contactName, contactPhone,
+      street, city, state, zip,
+      description, bedrooms, bathrooms, area, contactName, contactPhone,contactEmail,
       images
     } = req.body;
 
-    if (!title || !listingType || !propertyType || !price || !street || !city || !state || !zip || !country || !description) {
+    if (!title || !listingType || !propertyType || !price || !street || !city || !state || !zip  || !description) {
       return res.status(400).json({ msg: 'Please enter all required fields for the property.' });
     }
 
@@ -76,7 +76,7 @@ const postProperty = async (req, res) => {
       listingType,
       propertyType,
       price,
-      address: { street, city, state, zip, country },
+      address: { street, city, state, zip},
       description,
       bedrooms: ['Apartment', 'House', 'Condo'].includes(propertyType) ? parseInt(bedrooms) || 0 : 0,
       bathrooms: ['Apartment', 'House', 'Condo'].includes(propertyType) ? parseFloat(bathrooms) || 0 : 0,
@@ -84,6 +84,7 @@ const postProperty = async (req, res) => {
       images,
       contactName,
       contactPhone,
+      contactEmail,
       inquiredBy: [],
       userId: req.user.id   // 👈 attach logged-in user’s ID here
     });
