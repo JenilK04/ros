@@ -18,7 +18,7 @@ const Navbar = () => {
       : "text-white hover:text-gray-300 font-medium";
 
   return (
-    <nav className="bg-gradient-to-br from-blue-600 to-indigo-800 shadow p-4 flex justify-between items-center">
+    <nav className="bg-gradient-to-br from-blue-600 to-indigo-800 sticky top-0 z-50 shadow p-4 flex justify-between items-center">
       {/* Logo */}
       <div className="flex items-center gap-2">
         <Building className="text-white" />

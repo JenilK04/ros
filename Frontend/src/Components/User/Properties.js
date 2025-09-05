@@ -163,20 +163,22 @@ const Properties = () => {
           )}
 
           {/* Fixed Add Button */}
-          <div className="fixed bottom-6 right-6 z-50">
-            <button
-              onClick={() => {
-                setEditProperty(null); // Ensure modal is in Add mode
-                setIsModalOpen(true);
-              }}
-              className="flex items-center justify-center rounded-full h-14 w-14 text-white shadow-xl
-                         bg-gradient-to-br from-blue-600 to-indigo-800
-                         hover:from-blue-700 hover:to-indigo-900 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-              title="Add New Property"
-            >
-              <Plus className="h-8 w-8" />
-            </button>
-          </div>
+          {user?.role !== 'admin' && (
+              <div className="fixed bottom-6 right-6 z-50">
+                <button
+                  onClick={() => {
+                    setEditProperty(null); // Ensure modal is in Add mode
+                    setIsModalOpen(true);
+                  }}
+                  className="flex items-center justify-center rounded-full h-14 w-14 text-white shadow-xl
+                            bg-gradient-to-br from-blue-600 to-indigo-800
+                            hover:from-blue-700 hover:to-indigo-900 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  title="Add New Property"
+                >
+                  <Plus className="h-8 w-8" />
+                </button>
+              </div>
+            )}
         </div>
       </div>
 

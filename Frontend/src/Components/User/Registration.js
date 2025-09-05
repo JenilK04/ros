@@ -193,7 +193,7 @@ const Registration = () => {
               <span className="text-xl font-bold text-white">ROS-Real Estate EcoSystem</span>
             </div>
             <div className="text-sm text-gray-300">
-              Already have an account? <span className="text-blue-300 hover:text-blue-500 cursor-pointer font-medium" ><a href="\">Sign In</a></span>
+              Already have an account? <span className="text-blue-300 hover:text-blue-500 cursor-pointer font-medium" ><a href="\login">Sign In</a></span>
             </div>
           </div>
         </div>

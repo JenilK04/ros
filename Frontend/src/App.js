@@ -10,6 +10,7 @@ import PropertyDetails from './Components/User/propertyDetails';
 import ManageUsersPage from './Components/Admin/manageUsers-A';
 import UserDetails from './Components/Admin/userDetails';
 import {ProtectedAdmin,ProtectedUser} from './Components/ProtectedRoutes'; 
+import HomePage from './Components/home';
 
 function App() {
   return (
@@ -17,7 +18,8 @@ function App() {
       <BrowserRouter>
         <Routes>
           {/* Public Routes - Accessible to everyone */}
-          <Route path="/" element={<Login />} />
+          <Route path="/" element={<HomePage />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/registration" element={<Registration />} />
           <Route path="/properties" element={<ProtectedUser><Properties /></ProtectedUser>} />
           <Route path="/properties/:id" element={<ProtectedUser><PropertyDetails /></ProtectedUser>} />
