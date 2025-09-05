@@ -113,9 +113,9 @@ const deleteProperty = async (req, res) => {
     if (!property) {
       return res.status(404).json({ msg: 'Property not found' });
     }
-    
-    // Check if the logged-in user is the owner
-    if (property.userId.toString() !== req.user.id) {
+
+    // ✅ Allow owner OR admin to delete
+    if (property.userId.toString() !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({ msg: 'Not authorized to delete this property' });
     }
     
@@ -126,6 +126,7 @@ const deleteProperty = async (req, res) => {
     res.status(500).json({ msg: 'Server error', error: err.message });
   }
 };
+
 
 const addInquiry = async (req, res) => {
   try {

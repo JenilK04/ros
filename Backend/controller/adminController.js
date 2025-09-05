@@ -1,6 +1,6 @@
 const User = require('../models/Users');
 const mongoose = require('mongoose')
-
+const Property = require('../models/Property')
 
 const getAllUsers = async (req, res) => {
   try {
@@ -52,7 +52,7 @@ const isAdmin = async (req, res) => {
   }
 };
 
-const deleteUser = async(req,res)=>{
+const deleteUser = async (req, res) => {
   const userId = req.params.id;
 
   if (!mongoose.Types.ObjectId.isValid(userId)) {
@@ -60,17 +60,21 @@ const deleteUser = async(req,res)=>{
   }
 
   try {
+    // Delete the user
     const deletedUser = await User.findByIdAndDelete(userId);
 
     if (!deletedUser) {
       return res.status(404).json({ msg: 'User not found.' });
     }
 
-    res.json({ msg: 'User deleted successfully.' });
+    // Delete all properties belonging to this user
+    await Property.deleteMany({ userId: deletedUser._id });
+
+    res.json({ msg: 'User and their properties deleted successfully.' });
   } catch (error) {
-    console.error('Error deleting user:', error);
+    console.error('Error deleting user and properties:', error);
     res.status(500).json({ msg: 'Server error', error: error.message });
   }
-}
+};
 
 module.exports = { getAllUsers, isAdmin, deleteUser };
