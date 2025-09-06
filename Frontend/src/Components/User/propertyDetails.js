@@ -193,7 +193,7 @@ const PropertyDetails = () => {
             <h1 className="text-3xl font-extrabold text-gray-900">{property.title}</h1>
             <div className="flex items-center text-green-700 font-bold text-3xl">
               <IndianRupeeIcon className="h-7 w-7 mr-1" />
-              {parseFloat(property.price).toLocaleString('en-IN')}
+              {parseFloat(property.price).toLocaleString('en-IN')}{property.listingType === 'For Rent' ? '/month' : ''}
             </div>
           </div>
           <div className="flex items-center text-gray-600 text-lg mb-4">

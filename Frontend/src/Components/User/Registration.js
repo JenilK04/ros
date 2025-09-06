@@ -159,7 +159,7 @@ const Registration = () => {
       const res = await API.post('/auth/register', finalData);
       console.log('Registration success', res.data);
       alert('Registered successfully! Please login.');
-      navigate('/');
+      navigate('/login');
     } catch (err) {
       console.error('Registration failed', err.response?.data);
       alert(err.response?.data?.msg || 'Registration failed');
@@ -185,7 +185,7 @@ const Registration = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
       {/* Header */}
-      <div className="bg-gradient-to-br from-blue-600 to-indigo-800 shadow-sm border-b border-gray-200">
+      <div className="bg-gradient-to-br from-blue-600 to-indigo-800 shadow-sm border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-2">
@@ -193,7 +193,7 @@ const Registration = () => {
               <span className="text-xl font-bold text-white">ROS-Real Estate EcoSystem</span>
             </div>
             <div className="text-sm text-gray-300">
-              Already have an account? <span className="text-blue-300 hover:text-blue-500 cursor-pointer font-medium" ><a href="\login">Sign In</a></span>
+              Already have an account? <span className="text-blue-300 hover:text-blue-500 cursor-pointer font-medium" ><a href="/login">Sign In</a></span>
             </div>
           </div>
         </div>

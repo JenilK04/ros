@@ -20,7 +20,7 @@ const PropertyCard = ({ property, onDelete }) => {
           <p className="text-sm">{property.location}</p>
         </div>
         <div className="flex items-center text-green-700 font-bold text-lg mb-2">
-          <p>{property.price}</p>
+          <p>{property.price}{property.listingType === 'For Rent' ? '/month' : ''}</p>
         </div>
         
         {/* {property.contactName && (

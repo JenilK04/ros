@@ -123,13 +123,13 @@ const Properties = () => {
                     property={{
                       id: property._id,
                       title: property.title || 'No Title',
-                      location: `${property.address?.city}, ${property.address?.state}`,
-                      price: `₹${parseFloat(property.price || 0).toLocaleString('en-IN')}`,
+                      location: `${property.address?.street || 'Unknown Street'},${property.address?.city}, ${property.address?.state}`,
+                      price: `₹${parseFloat(property.price || 0).toLocaleString('en-IN')}${property.listingType === 'For Rent' ? '/month' : ''}`,
                       image: property.images?.[0] || 'https://via.placeholder.com/600x400',
                       contactName: property.contactName || 'Not Added',
                       contactPhone: property.contactPhone || 'Not Added',
                       contactEmail: property.contactEmail || 'Not Added',
-                    }}
+                    }}    
                     onDelete={() => handleDeleteProperty(property._id)}
                     onEdit={() => {
                       setEditProperty(property); // Set property to edit

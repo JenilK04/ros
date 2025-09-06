@@ -246,25 +246,33 @@ const AddPropertyModal = ({
 
               {/* Price */}
               <div className="col-span-1 md:col-span-2">
-                <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">
-                  Price <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">
-                    <IndianRupeeIcon className="h-5 w-5" />
-                  </span>
-                  <input
-                    type="number"
-                    id="price"
-                    name="price"
-                    value={formData.price}
-                    onChange={handleChange}
-                    className={`block w-full pl-10 border ${formErrors.price ? 'border-red-500' : 'border-gray-300'} rounded-lg shadow-sm p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors`}
-                    placeholder="e.g., 5000000"
-                    min="0"
-                  />
-                </div>
-                {formErrors.price && <p className="text-red-500 text-xs mt-1">{formErrors.price}</p>}
+                  <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">
+                    Price <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">
+                      <IndianRupeeIcon className="h-5 w-5" />
+                    </span>
+                    <input
+                      type="number"
+                      id="price"
+                      name="price"
+                      value={formData.price}
+                      onChange={handleChange}
+                      className={`block w-full pl-10 pr-20 border ${
+                        formErrors.price ? 'border-red-500' : 'border-gray-300'
+                      } rounded-lg shadow-sm p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors`}
+                      placeholder="e.g., 5000000"
+                      min="0"
+                    />
+                    {/* ✅ Dynamic label */}
+                    {formData.listingType === 'For Rent' && (
+                      <span className="absolute inset-y-0 right-3 flex items-center text-gray-500 text-sm">
+                        /month
+                      </span>
+                    )}
+                  </div>
+                  {formErrors.price && <p className="text-red-500 text-xs mt-1">{formErrors.price}</p>}
               </div>
             </div>
           </div>

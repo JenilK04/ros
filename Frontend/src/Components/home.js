@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import {LogIn, UserPlus } from "lucide-react";
+import {LogIn, UserPlus,Building } from "lucide-react";
 
 const HomePage = () => {
   return (
@@ -7,7 +7,10 @@ const HomePage = () => {
       
       {/* Navbar */}
       <nav className="flex justify-between items-center px-8 py-4 shadow-md bg-white sticky top-0 z-50">
-        <h1 className="text-2xl font-bold text-blue-700">ROS-Real Estate Ecosystem</h1>
+        <h1 className="text-2xl font-bold text-blue-700">
+          <Building className="inline-block h-8 w-8 mr-2" />
+          ROS-Real Estate Ecosystem
+        </h1>
         <div className="flex gap-4">
           <Link
             to="/login"
