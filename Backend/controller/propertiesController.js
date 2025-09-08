@@ -80,7 +80,7 @@ const postProperty = async (req, res) => {
       description,
       bedrooms: ['Apartment', 'House', 'Condo'].includes(propertyType) ? parseInt(bedrooms) || 0 : 0,
       bathrooms: ['Apartment', 'House', 'Condo'].includes(propertyType) ? parseFloat(bathrooms) || 0 : 0,
-      area: ['Apartment', 'House', 'Condo'].includes(propertyType) ? parseInt(area) || 0 : 0,
+      area,
       images,
       contactName,
       contactPhone,
@@ -170,9 +170,33 @@ const removeInquiry = async (req, res) => {
 const updateProperty = async (req, res) => {
   try {
     const { id } = req.params;
-    const updatedData = req.body;
+    const {
+      title, listingType, propertyType, price,
+      street, city, state, zip,
+      description, bedrooms, bathrooms, area, contactName, contactPhone, contactEmail,
+      images
+    } = req.body;
 
-    const property = await Property.findByIdAndUpdate(id, updatedData, { new: true });
+    // Build the update object
+    const updatedData = {
+      title, listingType, propertyType, price,
+      address: { street, city, state, zip },  // wrap nested address
+      description,
+      bedrooms: ['Apartment', 'House', 'Condo'].includes(propertyType) ? parseInt(bedrooms) || 0 : 0,
+      bathrooms: ['Apartment', 'House', 'Condo'].includes(propertyType) ? parseFloat(bathrooms) || 0 : 0,
+      area,
+      images,
+      contactName,
+      contactPhone,
+      contactEmail
+    };
+
+    const property = await Property.findByIdAndUpdate(
+      id,
+      { $set: updatedData }, // 🔹 use $set to update nested fields
+      { new: true }
+    );
+
     if (!property) return res.status(404).json({ msg: 'Property not found' });
 
     res.json({ msg: 'Property updated successfully', property });
@@ -181,6 +205,8 @@ const updateProperty = async (req, res) => {
     res.status(500).json({ msg: 'Server error', error: err.message });
   }
 };
+
+
 
 module.exports = {
   getbyidProperties,
