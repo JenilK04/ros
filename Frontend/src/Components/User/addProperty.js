@@ -325,12 +325,13 @@ const AddPropertyModal = ({
             </div>
 
             {/* Residential Details */}
+            {/* Residential Details: bedrooms and bathrooms only for residential types */}
             {isResidential && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {['bedrooms','bathrooms','area'].map((field) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {['bedrooms','bathrooms'].map((field) => (
                   <div key={field}>
                     <label htmlFor={field} className="block text-sm font-medium text-gray-700 mb-1">
-                      {field.charAt(0).toUpperCase()+field.slice(1)}
+                      {field.charAt(0).toUpperCase() + field.slice(1)}
                     </label>
                     <input
                       type="number"
@@ -346,8 +347,32 @@ const AddPropertyModal = ({
                 ))}
               </div>
             )}
-          </div>
 
+            {/* Area field always visible for all property types */}
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+              <div>
+                <label htmlFor="area" className="block text-sm font-medium text-gray-700 mb-1">
+                  Area
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    id="area"
+                    name="area"
+                    value={formData.area}
+                    onChange={handleChange}
+                    className={`mt-1 block w-full pr-16 border ${formErrors.area ? 'border-red-500' : 'border-gray-300'} rounded-lg shadow-sm p-3 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors`}
+                    min="0"
+                    placeholder="e.g., 1200"
+                  />
+                  <span className="absolute inset-y-0 right-3 flex items-center text-gray-500 text-sm">
+                    sq ft
+                  </span>
+                </div>
+                {formErrors.area && <p className="text-red-500 text-xs mt-1">{formErrors.area}</p>}
+              </div>
+            </div>
+          </div>
           {/* Contact Details */}
           <div className="space-y-6">
             <h3 className="text-xl font-semibold text-gray-800 flex items-center gap-2">

@@ -208,25 +208,31 @@ const PropertyDetails = () => {
             <h2 className="text-xl font-semibold text-gray-800 mb-2 border-b pb-2">Description</h2>
             <p className="text-gray-700 whitespace-pre-wrap">{property.description}</p>
           </div>
-          {isResidential && (
-            <div className="mb-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-2 border-b pb-2">Residential Features</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex items-center text-gray-700">
-                  <Bed className="h-5 w-5 mr-2 text-red-500" />
-                  <span>Bedrooms: <span className="font-medium">{property.bedrooms}</span></span>
-                </div>
-                <div className="flex items-center text-gray-700">
-                  <Bath className="h-5 w-5 mr-2 text-teal-500" />
-                  <span>Bathrooms: <span className="font-medium">{property.bathrooms}</span></span>
-                </div>
-                <div className="flex items-center text-gray-700">
-                  <Ruler className="h-5 w-5 mr-2 text-purple-500" />
-                  <span>Area: <span className="font-medium">{property.area} Sq. Ft.</span></span>
-                </div>
+
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold text-gray-800 mb-2 border-b pb-2">Property Details</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {isResidential && (
+                <>
+                  <div className="flex items-center text-gray-700">
+                    <Bed className="h-5 w-5 mr-2 text-red-500" />
+                    <span>Bedrooms: <span className="font-medium">{property.bedrooms}</span></span>
+                  </div>
+                  <div className="flex items-center text-gray-700">
+                    <Bath className="h-5 w-5 mr-2 text-teal-500" />
+                    <span>Bathrooms: <span className="font-medium">{property.bathrooms}</span></span>
+                  </div>
+                </>
+              )}
+              <div className="flex items-center text-gray-700">
+                <Ruler className="h-5 w-5 mr-2 text-purple-500" />
+                <span>Area: <span className="font-medium">
+                  {property.area} Sq. Ft
+                </span></span>
               </div>
             </div>
-          )}
+          </div>
+
 
           {/* 👇 UPDATED: Contact Info Section */}
           {(property.contactName || property.contactPhone || property.contactEmail) && (
