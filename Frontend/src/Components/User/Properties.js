@@ -128,12 +128,12 @@ const Properties = () => {
       <Navbar />
       <div className="p-4 bg-gradient-to-br from-blue-100 via-white to-green-100 min-h-screen">
         <div className="max-w-7xl mx-auto py-8">
-          <h1 className="text-3xl text-gray-800 font-extrabold mb-8 text-center">
+          {/* <h1 className="text-3xl text-gray-800 font-extrabold mb-4 text-center">
             Available Properties
-          </h1>
+          </h1> */}
 
           {/* 🔍 Search Bar */}
-          {user?.role !== 'admin' && <PropertySearchBar onSearch={setFilters} />}
+         <PropertySearchBar onSearch={setFilters} />
 
           {loading && <p className="text-center text-gray-600">Loading properties...</p>}
           {error && <p className="text-center text-red-600">{error}</p>}
@@ -144,9 +144,9 @@ const Properties = () => {
 
           {/* User's own properties */}
           {userProperties.length > 0 && (
-            <div className="mb-10 mt-8">
+            <div className="mt-8">
               <h2 className="text-2xl font-semibold mb-4">Your Properties</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
                 {userProperties.map((property) => (
                   <PropertyCard
                     key={property._id}
@@ -175,7 +175,7 @@ const Properties = () => {
           {otherProperties.length > 0 && (
             <div className="mt-8">
               <h2 className="text-2xl font-semibold mb-4">Other Properties</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
                 {otherProperties.map((property) => (
                   <PropertyCard
                     key={property._id}

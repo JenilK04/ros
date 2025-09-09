@@ -118,7 +118,7 @@ const PropertySearchBar = ({ onSearch }) => {
       {isFiltered && (
         <button
           onClick={clearFilters}
-          className="p-2 rounded-full text-red-500 hover:bg-red-100 transition"
+          className=" rounded-full text-red-500 hover:bg-red-100 transition"
           title="Clear Filters"
         >
           <XCircle className="w-6 h-6" />

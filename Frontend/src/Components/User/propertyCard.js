@@ -1,10 +1,10 @@
 // src/components/PropertyCard.jsx
-import React from 'react';
-import { MapPin, Trash2 } from 'lucide-react'; // Added Trash2 icon
+import { MapPin } from 'lucide-react'; // Added Trash2 icon
 import { Link } from 'react-router-dom';
 
 const PropertyCard = ({ property, onDelete }) => {
   return (
+  <Link to={`/properties/${property.id}`} className="hover:scale-105 transform transition duration-300">
     <div
       className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-100"
     >
@@ -39,24 +39,21 @@ const PropertyCard = ({ property, onDelete }) => {
         )} */}
 
         {/* View Details button */}
-        <Link 
-          to={`/properties/${property.id}`}
-          className="mt-2 w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition duration-200 block text-center"
-        >
-          View Details
-        </Link>
+        
+    
 
         {/* Delete button (optional, only if onDelete is passed) */}
-        {onDelete && (
+        {/* {onDelete && (
           <button
             onClick={onDelete}
             className="mt-2 w-full flex items-center justify-center gap-2 bg-red-600 text-white py-2 rounded-md hover:bg-red-700 transition duration-200"
           >
           <Trash2 className="h-4 w-4" /> Delete
           </button>
-        )}
+        )} */}
       </div>
     </div>
+  </Link>
   );
 };
 

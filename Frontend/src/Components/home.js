@@ -94,8 +94,8 @@ const HomePage = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-white text-center py-6 mt-12 border-t">
-        <p className="text-sm text-gray-600">
+      <footer className="bg-gray-700 text-center py-6 mt-12 border-t">
+        <p className="text-sm text-white">
           © {new Date().getFullYear()} ROS Real Estate Ecosystem. All rights reserved.
         </p>
       </footer>

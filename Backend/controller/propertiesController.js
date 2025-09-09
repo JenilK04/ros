@@ -193,10 +193,10 @@ const updateProperty = async (req, res) => {
 
     const property = await Property.findByIdAndUpdate(
       id,
-      { $set: updatedData }, // 🔹 use $set to update nested fields
+      { $set: updatedData }, // use $set to update nested fields
       { new: true }
     );
-
+  
     if (!property) return res.status(404).json({ msg: 'Property not found' });
 
     res.json({ msg: 'Property updated successfully', property });
