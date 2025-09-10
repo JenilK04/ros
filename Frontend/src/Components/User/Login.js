@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import { Lock, Mail, Eye, EyeOff, Building } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import API from '../../services/api';
-import { useUser } from '../../Context/userContext';  // ⬅️ import context
+import { useUser } from '../../Context/userContext';  
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-  const { loginUser } = useUser();   // ⬅️ get loginUser from context
+  const { loginUser } = useUser();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,13 +19,8 @@ const Login = () => {
       console.log('Login success:', response.data);
 
       const { token, role, user } = response.data;
-      // ⚠️ Make sure your backend returns `user` object (firstName, lastName, etc.)
-      // If not, loginUser will fetch full profile via /auth/user/me
-
-      // Use context to set user + save token
       await loginUser(user || {}, token);
 
-      // Redirect based on role
       if (role === 'admin') {
         navigate('/admin');
       } else {
@@ -39,28 +34,33 @@ const Login = () => {
 
   return (
     <>
-      <div className="bg-gradient-to-br from-blue-600 to-indigo-800 shadow-sm border-b border-gray-200 sticky top-0 z-50">
+      {/* Top Navbar (fixed header) */}
+      <div className="bg-gradient-to-br from-blue-600 to-indigo-800 shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex flex-col sm:flex-row items-center justify-between h-auto sm:h-16 py-3 sm:py-0 text-center sm:text-left">
             <div className="flex items-center space-x-2">
               <Building className="h-8 w-8 text-white" />
-              <span className="text-xl font-bold text-white">
+              <span className="text-lg sm:text-xl font-bold text-white">
                 ROS-Real Estate EcoSystem
               </span>
             </div>
-            <div className="text-sm text-gray-300">
+            <div className="text-xs sm:text-sm text-gray-200 mt-2 sm:mt-0">
               Join Our Real Estate Network
             </div>
           </div>
         </div>
       </div>
 
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 flex items-center justify-center">
-        <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-200 w-full max-w-md">
-          <div className="flex items-center space-x-2 mb-6">
-            <Building className="h-8 w-8 text-blue-600" />
-            <h2 className="text-2xl font-bold text-gray-900">ROS Login</h2>
+      {/* Main Login Section */}
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 flex items-center justify-center px-4 sm:px-6">
+        <div className="bg-white p-6 sm:p-8 rounded-xl shadow-lg border border-gray-200 w-full max-w-sm sm:max-w-md">
+          <div className="flex items-center space-x-2 mb-6 justify-center sm:justify-start">
+            <Building className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600" />
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+              ROS Login
+            </h2>
           </div>
+
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Email */}
             <div>
@@ -74,7 +74,7 @@ const Login = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="pl-10 w-full border border-gray-300 rounded-md py-2 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="pl-10 w-full border border-gray-300 rounded-md py-2 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
                   placeholder="you@example.com"
                 />
               </div>
@@ -92,7 +92,7 @@ const Login = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="pl-10 pr-10 w-full border border-gray-300 rounded-md py-2 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="pl-10 pr-10 w-full border border-gray-300 rounded-md py-2 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
                   placeholder="Your password"
                 />
                 <button
@@ -109,15 +109,17 @@ const Login = () => {
               </div>
             </div>
 
+            {/* Submit */}
             <button
               type="submit"
-              className="w-full bg-blue-600 text-white py-2 rounded-md font-medium hover:bg-blue-700 transition"
+              className="w-full bg-blue-600 text-white py-2 rounded-md font-medium hover:bg-blue-700 transition text-sm sm:text-base"
             >
               Login
             </button>
           </form>
 
-          <p className="text-sm text-gray-600 mt-4 text-center">
+          {/* Register link */}
+          <p className="text-xs sm:text-sm text-gray-600 mt-4 text-center">
             Don’t have an account?{' '}
             <span
               onClick={() => navigate('/registration')}

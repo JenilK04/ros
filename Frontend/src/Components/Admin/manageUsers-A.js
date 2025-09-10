@@ -1,7 +1,7 @@
-import{ useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import API from '../../services/api';
 import Navbar from '../User/navbar';
-import {Search,Trash2} from 'lucide-react';
+import { Search, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const ManageUsersPage = () => {
@@ -11,14 +11,10 @@ const ManageUsersPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
 
-
-  // 1. Fetch all user data from the API on component load
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        // --- THIS LINE IS CHANGED ---
-        // Change from API.post() to API.get()
-        const response = await API.get('/admin/users'); 
+        const response = await API.get('/admin/users');
         setUsers(response.data);
       } catch (err) {
         setError('Failed to fetch users.');
@@ -35,7 +31,7 @@ const ManageUsersPage = () => {
 
     try {
       await API.delete(`/admin/users/${userId}`);
-      setUsers(users.filter((user) => user._id !== userId)); // remove from state
+      setUsers(users.filter((user) => user._id !== userId));
       alert('User deleted successfully');
     } catch (err) {
       console.error('Delete Error:', err);
@@ -46,7 +42,7 @@ const ManageUsersPage = () => {
   if (loading) {
     return (
       <>
-        <Navbar/>
+        <Navbar />
         <div className="p-8 text-center text-gray-600">Loading users...</div>
       </>
     );
@@ -55,33 +51,37 @@ const ManageUsersPage = () => {
   if (error) {
     return (
       <>
-        <Navbar/>
+        <Navbar />
         <div className="p-8 text-center text-red-600">{error}</div>
       </>
     );
   }
-  // Filter users based on search term
+
   const filteredUsers = users.filter(user => {
-    const fullName = user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.name;
+    const fullName =
+      user.firstName && user.lastName
+        ? `${user.firstName} ${user.lastName}`
+        : user.name;
     return (
       (fullName && fullName.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase()))
     );
   });
 
-
   return (
     <>
       <Navbar />
       <div className="p-4 bg-gray-50 min-h-screen">
         <div className="max-w-7xl mx-auto">
-          {/* Page Header and Controls */}
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold text-gray-800">Manage Users</h1>
+          {/* Page Header */}
+          <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
+              Manage Users
+            </h1>
           </div>
 
-          {/* Search and Filter Section */}
-          <div className="mb-6 flex space-x-4">
+          {/* Search Section */}
+          <div className="mb-6 flex flex-col sm:flex-row gap-4">
             <div className="relative flex-grow">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
@@ -89,43 +89,70 @@ const ManageUsersPage = () => {
                 placeholder="Search by name or email..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md 
+                focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
               />
             </div>
-            {/* You can add dropdowns for filtering here */}
           </div>
 
           {/* User Table */}
           <div className="bg-white rounded-lg shadow overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
+            <table className="min-w-full divide-y divide-gray-200 text-sm sm:text-base">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Name
+                  </th>
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Email
+                  </th>
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Role
+                  </th>
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredUsers.map((user) => (
-                  <tr key={user._id}>
-                    {/* Updated to handle both name and firstName/lastName */}
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 hover:underline" onClick={()=> navigate(`/userdetails/${user._id}`)}>
-                      {user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.name}
+                  <tr key={user._id} className="hover:bg-gray-50">
+                    <td
+                      className="px-4 sm:px-6 py-4 whitespace-nowrap font-medium text-gray-900 cursor-pointer"
+                      onClick={() => navigate(`/userdetails/${user._id}`)}
+                    >
+                      {user.firstName && user.lastName
+                        ? `${user.firstName} ${user.lastName}`
+                        : user.name}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.role}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      {/* Assuming 'status' is a field in your user model */}
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                        ${user.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                        {user.status || 'Active'} {/* Default to 'Active' if status is not provided */}
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-gray-500">
+                      {user.email}
+                    </td>
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-gray-500">
+                      {user.role}
+                    </td>
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                        ${
+                          user.status === 'Active'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}
+                      >
+                        {user.status || 'Active'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button onClick={() => handleDeleteUser(user._id)} className="text-red-600 hover:text-red-900"><Trash2 className="h-4 w-4" /></button>
-                      {/* You'd have a function to call for each action */}
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-right">
+                      <button
+                        onClick={() => handleDeleteUser(user._id)}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
                     </td>
                   </tr>
                 ))}

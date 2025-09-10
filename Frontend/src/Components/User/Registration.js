@@ -185,15 +185,27 @@ const Registration = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
       {/* Header */}
-      <div className="bg-gradient-to-br from-blue-600 to-indigo-800 shadow-sm border-b border-gray-200 sticky top-0 z-50">
+      <div className="bg-gradient-to-br from-blue-600 to-indigo-800 shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-2">
+          <div className="flex flex-col sm:flex-row items-center justify-between h-auto sm:h-16 py-2 sm:py-0">
+            
+            {/* Logo */}
+            <div className="flex items-center space-x-2 mb-2 sm:mb-0">
               <Building className="h-8 w-8 text-white" />
-              <span className="text-xl font-bold text-white">ROS-Real Estate EcoSystem</span>
+              <span className="text-lg sm:text-xl font-bold text-white text-center sm:text-left">
+                ROS-Real Estate EcoSystem
+              </span>
             </div>
-            <div className="text-sm text-gray-300">
-              Already have an account? <span className="text-blue-300 hover:text-blue-500 cursor-pointer font-medium" ><a href="/login">Sign In</a></span>
+
+            {/* Right side text */}
+            <div className="text-xs sm:text-sm text-gray-200 text-center sm:text-right">
+              Already have an account?{" "}
+              <a
+                href="/login"
+                className="text-blue-300 hover:text-blue-500 font-medium"
+              >
+                Sign In
+              </a>
             </div>
           </div>
         </div>
@@ -202,12 +214,12 @@ const Registration = () => {
       <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl w-full space-y-8">
           {/* Hero Section */}
-          <div className="text-center">
-            <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
+          <div className="text-center px-2 sm:px-0">
+            <h2 className="mt-6 text-2xl sm:text-3xl font-extrabold text-gray-900">
               Join Our Real Estate Network
             </h2>
-            <p className="mt-2 text-sm text-gray-600">
-              Connect with buyers, sellers, agents, and developers in one powerful platform
+            <p className="mt-2 text-xs sm:text-sm text-gray-600">
+              Connect with buyers, sellers, agents, and developers in one platform
             </p>
           </div>
 

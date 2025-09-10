@@ -1,42 +1,75 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import {LogIn, UserPlus,Building } from "lucide-react";
+import { LogIn, UserPlus, Building, Menu, X } from "lucide-react";
 
 const HomePage = () => {
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
       
       {/* Navbar */}
-      <nav className="flex justify-between items-center px-8 py-4 shadow-md bg-white sticky top-0 z-50">
-        <h1 className="text-2xl font-bold text-blue-700">
-          <Building className="inline-block h-8 w-8 mr-2" />
+      <nav className="flex justify-between items-center px-6 md:px-8 py-4 shadow-md bg-white sticky top-0 z-50">
+        <h1 className="text-xl sm:text-2xl font-bold text-blue-700 flex items-center">
+          <Building className="inline-block h-6 w-6 sm:h-8 sm:w-8 mr-2" />
           ROS-Real Estate Ecosystem
         </h1>
-        <div className="flex gap-4">
+
+        {/* Desktop Links */}
+        <div className="hidden md:flex gap-4">
           <Link
             to="/login"
-            className="flex items-center gap-2 px-5 py-2 rounded-lg border border-blue-600 text-blue-600 font-medium hover:bg-blue-50 transition"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-blue-600 text-blue-600 font-medium hover:bg-blue-50 transition"
           >
             <LogIn className="h-5 w-5" /> Sign In
           </Link>
           <Link
             to="/registration"
-            className="flex items-center gap-2 px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition"
           >
             <UserPlus className="h-5 w-5" /> Sign Up
           </Link>
         </div>
+
+        {/* Mobile Menu Button */}
+        <button
+          className="md:hidden text-blue-700"
+          onClick={() => setMenuOpen(!menuOpen)}
+        >
+          {menuOpen ? <X size={28} /> : <Menu size={28} />}
+        </button>
       </nav>
+
+      {/* Mobile Links */}
+      {menuOpen && (
+        <div className="md:hidden flex flex-col items-center gap-3 py-4 bg-white shadow">
+          <Link
+            to="/login"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-blue-600 text-blue-600 font-medium hover:bg-blue-50 transition"
+            onClick={() => setMenuOpen(false)}
+          >
+            <LogIn className="h-5 w-5" /> Sign In
+          </Link>
+          <Link
+            to="/registration"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition"
+            onClick={() => setMenuOpen(false)}
+          >
+            <UserPlus className="h-5 w-5" /> Sign Up
+          </Link>
+        </div>
+      )}
 
       {/* Hero Section */}
       <header className="px-6 py-12 text-center">
-        <h2 className="text-4xl md:text-5xl font-extrabold mb-4 text-gray-800">
+        <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 text-gray-800">
           Welcome to ROS Real Estate
         </h2>
-        <p className="max-w-2xl mx-auto text-gray-600 mb-6">
+        <p className="max-w-2xl mx-auto text-gray-600 mb-6 px-2 sm:px-0">
           Your one-stop ecosystem for buying, selling, and managing properties. 
           Whether you are a Buyer, Seller, Developer, or Agent — we bring everyone together.
         </p>
-        <div className="flex justify-center gap-4">
+        <div className="flex flex-col sm:flex-row justify-center gap-4">
           <Link
             to="/login"
             className="px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium shadow transition"

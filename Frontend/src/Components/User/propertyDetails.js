@@ -154,156 +154,161 @@ const PropertyDetails = () => {
 
   return (
     <div className="py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-100 via-white to-green-100">
-      <div className="max-w-4xl mx-auto bg-white/90 backdrop-blur-sm rounded-xl shadow-2xl overflow-hidden border border-gray-200/50">
-        
-        <div className="relative h-96 bg-gray-200">
-          {property.images?.length > 0 ? (
+      <div className="py-8 sm:py-12 px-3 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-100 via-white to-green-100">
+  <div className="max-w-4xl mx-auto bg-white/90 backdrop-blur-sm rounded-xl shadow-2xl overflow-hidden border border-gray-200/50">
+    
+    {/* Image Carousel */}
+    <div className="relative h-64 sm:h-80 md:h-96 bg-gray-200">
+      {property.images?.length > 0 ? (
+        <>
+          <img
+            src={property.images[currentImageIndex]}
+            alt={`${property.title} ${currentImageIndex + 1}`}
+            className="w-full h-full object-cover"
+          />
+          {property.images.length > 1 && (
             <>
-              <img
-                src={property.images[currentImageIndex]}
-                alt={`${property.title} ${currentImageIndex + 1}`}
-                className="w-full h-full object-cover"
-              />
-              {property.images.length > 1 && (
-                <>
-                  <button
-                    onClick={() => setCurrentImageIndex(prev => (prev === 0 ? property.images.length - 1 : prev - 1))}
-                    className="absolute top-1/2 left-4 -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full z-10 hover:bg-opacity-75"
-                  >
-                    <ArrowLeft />
-                  </button>
-                  <button
-                    onClick={() => setCurrentImageIndex(prev => (prev === property.images.length - 1 ? 0 : prev + 1))}
-                    className="absolute top-1/2 right-4 -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full z-10 hover:bg-opacity-75"
-                  >
-                    <ArrowRight />
-                  </button>
-                </>
-              )}
+              <button
+                onClick={() => setCurrentImageIndex(prev => (prev === 0 ? property.images.length - 1 : prev - 1))}
+                className="absolute top-1/2 left-2 sm:left-4 -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full z-10 hover:bg-opacity-75"
+              >
+                <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+              </button>
+              <button
+                onClick={() => setCurrentImageIndex(prev => (prev === property.images.length - 1 ? 0 : prev + 1))}
+                className="absolute top-1/2 right-2 sm:right-4 -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full z-10 hover:bg-opacity-75"
+              >
+                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
+              </button>
             </>
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gray-300 text-gray-600">
-              No Image Available
-            </div>
           )}
+        </>
+      ) : (
+        <div className="w-full h-full flex items-center justify-center bg-gray-300 text-gray-600">
+          No Image Available
         </div>
+      )}
+    </div>
 
-        <div className="p-8">
-          <div className="flex justify-between items-start mb-4">
-            <h1 className="text-3xl font-extrabold text-gray-900">{property.title}</h1>
-            <div className="flex items-center text-green-700 font-bold text-3xl">
-              <IndianRupeeIcon className="h-7 w-7 mr-1" />
-              {parseFloat(property.price).toLocaleString('en-IN')}{property.listingType === 'For Rent' ? '/month' : ''}
-            </div>
-          </div>
-          <div className="flex items-center text-gray-600 text-lg mb-4">
-            <MapPin className="h-5 w-5 mr-2 text-blue-500" />
-            <p>{property.address?.street}, {property.address?.city}, {property.address?.state} - {property.address?.zip}</p>
-          </div>
-          <div className="flex items-center text-gray-600 text-base mb-6">
-            {getPropertyTypeIcon(property.propertyType)}
-            <p className="ml-2">{property.propertyType} - {property.listingType}</p>
-          </div>
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-2 border-b pb-2">Description</h2>
-            <p className="text-gray-700 whitespace-pre-wrap">{property.description}</p>
-          </div>
+    {/* Content */}
+    <div className="p-4 sm:p-6 md:p-8">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-4 gap-2">
+        <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900">{property.title}</h1>
+        <div className="flex items-center text-green-700 font-bold text-2xl md:text-3xl">
+          <IndianRupeeIcon className="h-6 w-6 md:h-7 md:w-7 mr-1" />
+          {parseFloat(property.price).toLocaleString('en-IN')}
+          {property.listingType === 'For Rent' ? '/month' : ''}
+        </div>
+      </div>
 
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-2 border-b pb-2">Property Details</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {isResidential && (
-                <>
-                  <div className="flex items-center text-gray-700">
-                    <Bed className="h-5 w-5 mr-2 text-red-500" />
-                    <span>Bedrooms: <span className="font-medium">{property.bedrooms}</span></span>
-                  </div>
-                  <div className="flex items-center text-gray-700">
-                    <Bath className="h-5 w-5 mr-2 text-teal-500" />
-                    <span>Bathrooms: <span className="font-medium">{property.bathrooms}</span></span>
-                  </div>
-                </>
-              )}
+      <div className="flex items-start text-gray-600 text-base sm:text-lg mb-4">
+        <MapPin className="h-5 w-5 mr-2 text-blue-500 shrink-0" />
+        <p className="break-words">{property.address?.street}, {property.address?.city}, {property.address?.state} - {property.address?.zip}</p>
+      </div>
+
+      <div className="flex items-center text-gray-600 text-sm sm:text-base mb-6">
+        {getPropertyTypeIcon(property.propertyType)}
+        <p className="ml-2">{property.propertyType} - {property.listingType}</p>
+      </div>
+
+      {/* Description */}
+      <div className="mb-6">
+        <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2 border-b pb-2">Description</h2>
+        <p className="text-gray-700 whitespace-pre-wrap text-sm sm:text-base">{property.description}</p>
+      </div>
+
+      {/* Property Details */}
+      <div className="mb-6">
+        <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2 border-b pb-2">Property Details</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {isResidential && (
+            <>
               <div className="flex items-center text-gray-700">
-                <Ruler className="h-5 w-5 mr-2 text-purple-500" />
-                <span>Area: <span className="font-medium">
-                  {property.area} Sq. Ft
-                </span></span>
+                <Bed className="h-5 w-5 mr-2 text-red-500" />
+                <span>Bedrooms: <span className="font-medium">{property.bedrooms}</span></span>
               </div>
-            </div>
-          </div>
-
-
-          {/* 👇 UPDATED: Contact Info Section */}
-          {(property.contactName || property.contactPhone || property.contactEmail) && (
-            <div className="mb-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-2 border-b pb-2">Contact Information</h2>
-              {/* Seller's name is always visible */}
-              {property.contactName && (
-                <div className="flex items-center text-gray-700 mb-1">
-                  <User className="h-5 w-5 mr-2 text-gray-500" />
-                  <span>{property.contactName}</span>
-                </div>
-              )}
-              {/* Phone and Email are conditionally displayed */}
-              <div className="flex items-center text-gray-700 mb-1">
-                <Phone className="h-5 w-5 mr-2 text-gray-500" />
-                {showFullContactInfo ? (
-                  <a href={`tel:${property.contactPhone}`} className="hover:underline text-blue-600">{property.contactPhone}</a>
-                ) : (
-                  <span>{getPartialValue(property.contactPhone)}</span>
-                )}
+              <div className="flex items-center text-gray-700">
+                <Bath className="h-5 w-5 mr-2 text-teal-500" />
+                <span>Bathrooms: <span className="font-medium">{property.bathrooms}</span></span>
               </div>
-              <div className="flex items-center text-gray-700 mb-1">
-                <Mail className="h-5 w-5 mr-2 text-gray-500" />
-                {showFullContactInfo ? (
-                  <a href={`mailto:${property.contactEmail}`} className="hover:underline text-blue-600">{property.contactEmail}</a>
-                ) : (
-                  <span>{getPartialValue(property.contactEmail)}</span>
-                )}
-              </div>
-            </div>
+            </>
           )}
-          {/* 👆 END of UPDATED: Contact Info Section */}
-
-          {/* Action Buttons with Admin Delete */}
-          <div className="flex flex-col sm:flex-row gap-4 mt-6">
-            <button
-              onClick={() => navigate('/properties')}
-              className="w-full sm:w-auto flex-grow bg-gray-200 text-gray-800 py-2 rounded-md hover:bg-gray-300 transition"
-            >
-              Back to Properties
-            </button>
-
-            {isOwner ? (
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="w-full sm:w-auto flex-grow bg-yellow-600 text-white py-2 rounded-md hover:bg-yellow-700 transition"
-              >
-                Edit Property
-              </button>
-            ) : !isAdmin && (
-              <button
-                onClick={handleInquiryToggle}
-                className={`w-full sm:w-auto flex-grow py-2 rounded-md text-white transition duration-200
-                  ${inquired ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'}`}
-              >
-                {inquired ? 'Remove from Inquiry' : 'Add to Inquiry'}
-              </button>
-            )}
-
-            {isAdmin && (
-              <button
-                onClick={handleDeleteProperty}
-                className="w-full sm:w-auto flex-grow bg-red-600 text-white py-2 rounded-md hover:bg-red-700 transition flex items-center justify-center gap-2"
-              >
-                <Trash2 className="h-5 w-5" />
-                Delete Property
-              </button>
-            )}
+          <div className="flex items-center text-gray-700">
+            <Ruler className="h-5 w-5 mr-2 text-purple-500" />
+            <span>Area: <span className="font-medium">{property.area} Sq. Ft</span></span>
           </div>
         </div>
       </div>
+
+      {/* Contact Info */}
+      {(property.contactName || property.contactPhone || property.contactEmail) && (
+        <div className="mb-6">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2 border-b pb-2">Contact Information</h2>
+          {property.contactName && (
+            <div className="flex items-center text-gray-700 mb-1">
+              <User className="h-5 w-5 mr-2 text-gray-500" />
+              <span>{property.contactName}</span>
+            </div>
+          )}
+          <div className="flex items-center text-gray-700 mb-1">
+            <Phone className="h-5 w-5 mr-2 text-gray-500" />
+            {showFullContactInfo ? (
+              <a href={`tel:${property.contactPhone}`} className="hover:underline text-blue-600">{property.contactPhone}</a>
+            ) : (
+              <span>{getPartialValue(property.contactPhone)}</span>
+            )}
+          </div>
+          <div className="flex items-center text-gray-700 mb-1">
+            <Mail className="h-5 w-5 mr-2 text-gray-500" />
+            {showFullContactInfo ? (
+              <a href={`mailto:${property.contactEmail}`} className="hover:underline text-blue-600">{property.contactEmail}</a>
+            ) : (
+              <span>{getPartialValue(property.contactEmail)}</span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Action Buttons */}
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6">
+        <button
+          onClick={() => navigate('/properties')}
+          className="w-full sm:w-auto flex-grow bg-gray-200 text-gray-800 py-2 rounded-md hover:bg-gray-300 transition"
+        >
+          Back to Properties
+        </button>
+
+        {isOwner ? (
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="w-full sm:w-auto flex-grow bg-yellow-600 text-white py-2 rounded-md hover:bg-yellow-700 transition"
+          >
+            Edit Property
+          </button>
+        ) : !isAdmin && (
+          <button
+            onClick={handleInquiryToggle}
+            className={`w-full sm:w-auto flex-grow py-2 rounded-md text-white transition duration-200
+              ${inquired ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'}`}
+          >
+            {inquired ? 'Remove from Inquiry' : 'Add to Inquiry'}
+          </button>
+        )}
+
+        {isAdmin && (
+          <button
+            onClick={handleDeleteProperty}
+            className="w-full sm:w-auto flex-grow bg-red-600 text-white py-2 rounded-md hover:bg-red-700 transition flex items-center justify-center gap-2"
+          >
+            <Trash2 className="h-5 w-5" />
+            Delete Property
+          </button>
+        )}
+      </div>
+    </div>
+  </div>
+</div>
+
       
       {isOwner && property && (
         <AddPropertyModal
