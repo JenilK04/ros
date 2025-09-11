@@ -1,22 +1,42 @@
-// src/services/api.js
-import axios from 'axios';
+import axios from "axios";
+import { getLoading } from "../Context/loadingContext";
 
 const API = axios.create({
-    baseURL: 'http://localhost:5000/api', // Your backend API base URL
+  baseURL: "http://localhost:5000/api",
 });
 
-// Interceptor to attach the token to every request
+// Request interceptor
 API.interceptors.request.use(
-    (config) => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-    },
-    (error) => {
-        return Promise.reject(error);
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
+
+    const control = getLoading();
+    if (control) control.setLoading(true);
+
+    return config;
+  },
+  (error) => {
+    const control = getLoading();
+    if (control) control.setLoading(false);
+    return Promise.reject(error);
+  }
+);
+
+// Response interceptor
+API.interceptors.response.use(
+  (response) => {
+    const control = getLoading();
+    if (control) control.setLoading(false);
+    return response;
+  },
+  (error) => {
+    const control = getLoading();
+    if (control) control.setLoading(false);
+    return Promise.reject(error);
+  }
 );
 
 export default API;
