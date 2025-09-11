@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { XCircle, MapPin, Home, IndianRupee, ClipboardList } from "lucide-react";
+import { X, MapPin, Home, IndianRupee, ClipboardList } from "lucide-react";
 
 const PropertySearchBar = ({ onSearch }) => {
   const [filters, setFilters] = useState({
@@ -115,10 +115,10 @@ const PropertySearchBar = ({ onSearch }) => {
         {isFiltered && (
           <button
             onClick={clearFilters}
-            className="text-red-500 hover:bg-red-100 rounded-full p-1 transition self-end lg:self-center"
+            className="text-red-500 hover:bg-red-100 rounded-full transition self-end lg:self-center"
             title="Clear Filters"
           >
-            <XCircle className="w-6 h-6" />
+            <X className="w-5 h-5" />
           </button>
         )}
       </div>

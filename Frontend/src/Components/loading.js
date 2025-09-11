@@ -1,12 +1,13 @@
 // src/components/Loading.jsx
-import { Home, Building, MapPin, User } from "lucide-react";
+import { Home, Building, MapPinHouseIcon, User, Warehouse } from "lucide-react";
 import { useState, useEffect } from "react";
 
 const icons = [
   { Icon: Home, color: "text-green-600" },
   { Icon: Building, color: "text-blue-600" },
-  { Icon: MapPin, color: "text-red-600" },
+  { Icon: MapPinHouseIcon, color: "text-red-600" },
   { Icon: User, color: "text-purple-600" },
+  { Icon: Warehouse, color: "text-yellow-600" },
 ];
 
 const Loading = () => {
