@@ -14,8 +14,15 @@ export const LoadingProvider = ({ children }) => {
 
   return (
     <LoadingContext.Provider value={{ loading, setLoading }}>
-      {loading && <Loading />} {/* Global loader overlay */}
-      {children}
+      <div className="relative min-h-screen">
+        {children}
+
+        {loading && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+            <Loading />
+          </div>
+        )}
+      </div>
     </LoadingContext.Provider>
   );
 };

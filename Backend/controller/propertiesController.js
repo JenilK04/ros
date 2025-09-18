@@ -1,11 +1,12 @@
+const { generateARForProperty } = require('./arController');
 const Property = require('../models/Property');
 const mongoose = require('mongoose');
 
-// ✅ Get property by ID (show contact info only if inquire
+// ✅ Get property by ID
 const getbyidProperties = async (req, res) => {
   try {
     const propertyId = req.params.id;
-    const userId = req.user?.id; // from auth middleware
+    const userId = req.user?.id;
 
     if (!mongoose.Types.ObjectId.isValid(propertyId)) {
       return res.status(400).json({ msg: "Invalid property ID format." });
@@ -18,13 +19,12 @@ const getbyidProperties = async (req, res) => {
 
     let responseProperty = property.toObject();
 
-    // ✅ Only remove contact info if no inquiries at all
-    // If user has inquired, show contact info
+    // Hide contact info if not inquired
     if (!responseProperty.inquiredBy.includes(userId)) {
-      // Optionally, you can also hide contact info for non-authenticated users
       if (!userId) {
         delete responseProperty.contactName;
         delete responseProperty.contactPhone;
+        delete responseProperty.contactEmail;
       }
     }
 
@@ -34,8 +34,6 @@ const getbyidProperties = async (req, res) => {
     res.status(500).json({ msg: "Server error", error: error.message });
   }
 };
-
-
 
 // ✅ Get all properties
 const getAllProperties = async (req, res) => {
@@ -54,11 +52,13 @@ const postProperty = async (req, res) => {
     const {
       title, listingType, propertyType, price,
       street, city, state, zip,
-      description, bedrooms, bathrooms, area, contactName, contactPhone,contactEmail,
+      description, bedrooms, bathrooms, area,
+      contactName, contactPhone, contactEmail,
       images
     } = req.body;
 
-    if (!title || !listingType || !propertyType || !price || !street || !city || !state || !zip  || !description) {
+    if (!title || !listingType || !propertyType || !price ||
+        !street || !city || !state || !zip || !description) {
       return res.status(400).json({ msg: 'Please enter all required fields for the property.' });
     }
 
@@ -66,17 +66,12 @@ const postProperty = async (req, res) => {
       return res.status(400).json({ msg: 'At least one image is required.' });
     }
 
-    const totalImageSize = images.reduce((acc, img) => acc + img.length, 0);
-    if (totalImageSize > (5 * 1024 * 1024)) {
-      return res.status(413).json({ msg: 'Image data is too large. Max 5MB total per property.' });
-    }
-
     const newProperty = new Property({
       title,
       listingType,
       propertyType,
       price,
-      address: { street, city, state, zip},
+      address: { street, city, state, zip },
       description,
       bedrooms: ['Apartment', 'House', 'Condo'].includes(propertyType) ? parseInt(bedrooms) || 0 : 0,
       bathrooms: ['Apartment', 'House', 'Condo'].includes(propertyType) ? parseFloat(bathrooms) || 0 : 0,
@@ -86,39 +81,81 @@ const postProperty = async (req, res) => {
       contactPhone,
       contactEmail,
       inquiredBy: [],
-      userId: req.user.id   // 👈 attach logged-in user’s ID here
+      userId: req.user.id
     });
+
+    // ✅ Generate AR model
+    try {
+      const arModelBase64 = await generateARForProperty(images, null);
+      newProperty.arModel = arModelBase64;
+    } catch (err) {
+      console.error("AR generation failed:", err);
+    }
 
     const savedProperty = await newProperty.save();
     res.status(201).json(savedProperty);
   } catch (error) {
     console.error('Error adding property:', error);
-
-    if (error.name === 'MongoServerError' && error.message.includes('Document exceeded max allowed bson size')) {
-      return res.status(413).json({ msg: 'Property data (including images) is too large to save. Please use smaller images.' });
-    }
-
     res.status(500).json({ msg: 'Server error', error: error.message });
   }
 };
 
+// ✅ Update property
+const updateProperty = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      title, listingType, propertyType, price,
+      street, city, state, zip,
+      description, bedrooms, bathrooms, area,
+      contactName, contactPhone, contactEmail,
+      images
+    } = req.body;
 
-// ✅ Add inquiry
+    const property = await Property.findById(id);
+    if (!property) return res.status(404).json({ msg: 'Property not found' });
 
-// ✅ Get properties inquired by the current user
+    property.title = title;
+    property.listingType = listingType;
+    property.propertyType = propertyType;
+    property.price = price;
+    property.address = { street, city, state, zip };
+    property.description = description;
+    property.bedrooms = ['Apartment', 'House', 'Condo'].includes(propertyType) ? parseInt(bedrooms) || 0 : 0;
+    property.bathrooms = ['Apartment', 'House', 'Condo'].includes(propertyType) ? parseFloat(bathrooms) || 0 : 0;
+    property.area = area;
+    property.contactName = contactName;
+    property.contactPhone = contactPhone;
+    property.contactEmail = contactEmail;
+
+    // ✅ If images changed → regenerate AR
+    if (images && JSON.stringify(images) !== JSON.stringify(property.images)) {
+      property.images = images;
+      try {
+        property.arModel = await generateARForProperty(images, id);
+      } catch (err) {
+        console.error("AR regeneration failed:", err);
+      }
+    }
+
+    const savedProperty = await property.save();
+    res.json({ msg: 'Property updated successfully', property: savedProperty });
+  } catch (err) {
+    console.error('Error updating property:', err);
+    res.status(500).json({ msg: 'Server error', error: err.message });
+  }
+};
+
+// ✅ Delete property
 const deleteProperty = async (req, res) => {
   try {
     const property = await Property.findById(req.params.id);
-    
-    if (!property) {
-      return res.status(404).json({ msg: 'Property not found' });
-    }
+    if (!property) return res.status(404).json({ msg: 'Property not found' });
 
-    // ✅ Allow owner OR admin to delete
     if (property.userId.toString() !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({ msg: 'Not authorized to delete this property' });
     }
-    
+
     await property.deleteOne();
     res.status(200).json({ msg: 'Property deleted successfully' });
   } catch (err) {
@@ -127,14 +164,11 @@ const deleteProperty = async (req, res) => {
   }
 };
 
-
+// ✅ Add inquiry
 const addInquiry = async (req, res) => {
   try {
     const property = await Property.findById(req.params.id);
     if (!property) return res.status(404).json({ msg: "Property not found" });
-
-    // Ensure inquiredBy exists
-    property.inquiredBy = property.inquiredBy || [];
 
     if (property.inquiredBy.includes(req.user.id)) {
       return res.status(400).json({ msg: "Already inquired" });
@@ -150,13 +184,13 @@ const addInquiry = async (req, res) => {
   }
 };
 
+// ✅ Remove inquiry
 const removeInquiry = async (req, res) => {
   try {
     const property = await Property.findById(req.params.id);
     if (!property) return res.status(404).json({ msg: 'Property not found' });
 
     const userId = req.user.id;
-
     property.inquiredBy = property.inquiredBy.filter(id => id.toString() !== userId);
     await property.save();
 
@@ -167,53 +201,12 @@ const removeInquiry = async (req, res) => {
   }
 };
 
-const updateProperty = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const {
-      title, listingType, propertyType, price,
-      street, city, state, zip,
-      description, bedrooms, bathrooms, area, contactName, contactPhone, contactEmail,
-      images
-    } = req.body;
-
-    // Build the update object
-    const updatedData = {
-      title, listingType, propertyType, price,
-      address: { street, city, state, zip },  // wrap nested address
-      description,
-      bedrooms: ['Apartment', 'House', 'Condo'].includes(propertyType) ? parseInt(bedrooms) || 0 : 0,
-      bathrooms: ['Apartment', 'House', 'Condo'].includes(propertyType) ? parseFloat(bathrooms) || 0 : 0,
-      area,
-      images,
-      contactName,
-      contactPhone,
-      contactEmail
-    };
-
-    const property = await Property.findByIdAndUpdate(
-      id,
-      { $set: updatedData }, // use $set to update nested fields
-      { new: true }
-    );
-  
-    if (!property) return res.status(404).json({ msg: 'Property not found' });
-
-    res.json({ msg: 'Property updated successfully', property });
-  } catch (err) {
-    console.error('Error updating property:', err);
-    res.status(500).json({ msg: 'Server error', error: err.message });
-  }
-};
-
-
-
 module.exports = {
   getbyidProperties,
   getAllProperties,
   postProperty,
-  addInquiry,
-  removeInquiry,
+  updateProperty,
   deleteProperty,
-  updateProperty
+  addInquiry,
+  removeInquiry
 };
