@@ -7,7 +7,7 @@ import {
   MapPin, IndianRupeeIcon, Bed, Bath, Ruler,
   Building, Home, LandPlot, Trash2,
   ArrowLeft, ArrowRight, User, Phone,
-  Mail, Box
+  Mail
 } from 'lucide-react';
 import { useUser } from '../../Context/userContext';
 
@@ -22,7 +22,10 @@ const PropertyDetails = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [inquired, setInquired] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [showAR, setShowAR] = useState(false);
+
+  // Fullscreen Gallery
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [galleryImageIndex, setGalleryImageIndex] = useState(0);
 
   // Fetch property by ID
   const fetchPropertyDetails = async () => {
@@ -51,10 +54,9 @@ const PropertyDetails = () => {
 
   useEffect(() => {
     if (id) fetchPropertyDetails();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, user?._id]);
 
-  // Inquiry toggle
   const handleInquiryToggle = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -77,14 +79,12 @@ const PropertyDetails = () => {
     }
   };
 
-  // Update property
   const handleUpdateProperty = async (propertyId, updatedPropertyData) => {
     try {
       const token = localStorage.getItem('token');
       const response = await API.put(`/properties/${propertyId}`, updatedPropertyData, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
       setProperty(response.data.property || { ...property, ...updatedPropertyData });
       setIsModalOpen(false);
       alert('Property updated successfully!');
@@ -94,14 +94,11 @@ const PropertyDetails = () => {
     }
   };
 
-  // Delete property
   const handleDeleteProperty = async () => {
-    if (window.confirm('Are you sure you want to delete this property permanently? This action cannot be undone.')) {
+    if (window.confirm('Are you sure you want to delete this property permanently?')) {
       try {
         const token = localStorage.getItem('token');
-        await API.delete(`/properties/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        await API.delete(`/properties/${id}`, { headers: { Authorization: `Bearer ${token}` } });
         alert('Property deleted successfully!');
         navigate('/properties');
       } catch (err) {
@@ -160,40 +157,44 @@ const PropertyDetails = () => {
       <div className="max-w-4xl mx-auto bg-white/90 backdrop-blur-sm rounded-xl shadow-2xl overflow-hidden border border-gray-200/50">
 
         {/* Image Carousel */}
-        <div className="relative h-64 sm:h-80 md:h-96 bg-gray-200">
+        <div
+          className="relative h-64 sm:h-80 md:h-96 bg-gray-200 cursor-pointer"
+          onClick={() => { setIsGalleryOpen(true); setGalleryImageIndex(currentImageIndex); }}
+        >
           {property.images?.length > 0 ? (
-            <>
-              <img
-                src={property.images[currentImageIndex]}
-                alt={`${property.title} ${currentImageIndex + 1}`}
-                className="w-full h-full object-cover"
-              />
-              {property.images.length > 1 && (
-                <>
-                  <button
-                    onClick={() => setCurrentImageIndex(prev => (prev === 0 ? property.images.length - 1 : prev - 1))}
-                    className="absolute top-1/2 left-2 sm:left-4 -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full z-10 hover:bg-opacity-75"
-                  >
-                    <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-                  </button>
-                  <button
-                    onClick={() => setCurrentImageIndex(prev => (prev === property.images.length - 1 ? 0 : prev + 1))}
-                    className="absolute top-1/2 right-2 sm:right-4 -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full z-10 hover:bg-opacity-75"
-                  >
-                    <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
-                  </button>
-                </>
-              )}
-            </>
+            <img
+              src={property.images[currentImageIndex]}
+              alt={`${property.title} ${currentImageIndex + 1}`}
+              className="w-full h-full object-cover"
+            />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gray-300 text-gray-600">
               No Image Available
             </div>
           )}
+          {property.images?.length > 1 && (
+            <>
+              <button
+                onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(prev => prev === 0 ? property.images.length - 1 : prev - 1); }}
+                className="absolute top-1/2 left-2 sm:left-4 -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full z-10 hover:bg-opacity-75"
+              >
+                <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(prev => prev === property.images.length - 1 ? 0 : prev + 1); }}
+                className="absolute top-1/2 right-2 sm:right-4 -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full z-10 hover:bg-opacity-75"
+              >
+                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
+              </button>
+            </>
+          )}
         </div>
+
+        {/* AR Viewer */}
 
         {/* Content */}
         <div className="p-4 sm:p-6 md:p-8">
+          {/* Title & Price */}
           <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-4 gap-2">
             <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900">{property.title}</h1>
             <div className="flex items-center text-green-700 font-bold text-2xl md:text-3xl">
@@ -202,20 +203,19 @@ const PropertyDetails = () => {
               {property.listingType === 'For Rent' ? '/month' : ''}
             </div>
           </div>
+          {property._id && <ARViewer propertyId={property._id} />}
 
+          {/* Address */}
           <div className="flex items-start text-gray-600 text-base sm:text-lg mb-4">
             <MapPin className="h-5 w-5 mr-2 text-blue-500 shrink-0" />
             <p className="break-words">{property.address?.street}, {property.address?.city}, {property.address?.state} - {property.address?.zip}</p>
           </div>
 
+          {/* Type */}
           <div className="flex items-center text-gray-600 text-sm sm:text-base mb-6">
             {getPropertyTypeIcon(property.propertyType)}
             <p className="ml-2">{property.propertyType} - {property.listingType}</p>
           </div>
-          
-          {/* AR Modal */}
-          {property._id && <ARViewer propertyId={property._id} />}
-
 
           {/* Description */}
           <div className="mb-6">
@@ -276,7 +276,6 @@ const PropertyDetails = () => {
           )}
 
           {/* Action Buttons */}
-          {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6">
             <button
               onClick={() => navigate('/properties')}
@@ -326,6 +325,7 @@ const PropertyDetails = () => {
         </div>
       </div>
 
+      {/* Add/Edit Modal */}
       {isOwner && property && (
         <AddPropertyModal
           isOpen={isModalOpen}
@@ -334,6 +334,54 @@ const PropertyDetails = () => {
           onUpdateProperty={handleUpdateProperty}
           loggedInUser={{ name: `${user?.firstName || ''} ${user?.lastName || ''}`, phone: user?.phone || '', email: user?.email || '' }}
         />
+      )}
+
+      {/* Fullscreen Image Gallery */}
+      {isGalleryOpen && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center">
+          <button
+            onClick={() => setIsGalleryOpen(false)}
+            className="absolute top-4 right-4 text-white text-4xl font-bold z-50"
+          >
+            &times;
+          </button>
+
+          <div className="relative max-w-5xl max-h-[90vh] flex items-center justify-center">
+            <img
+              src={property.images[galleryImageIndex]}
+              alt={`Gallery ${galleryImageIndex + 1}`}
+              className="max-w-full max-h-[90vh] object-contain"
+            />
+
+            {/* Prev Button */}
+            {property.images.length > 1 && (
+              <button
+                onClick={() =>
+                  setGalleryImageIndex(prev =>
+                    prev === 0 ? property.images.length - 1 : prev - 1
+                  )
+                }
+                className="absolute left-2 text-white text-3xl p-2 bg-black bg-opacity-30 rounded-full hover:bg-opacity-50"
+              >
+                <ArrowLeft className="w-6 h-6" />
+              </button>
+            )}
+
+            {/* Next Button */}
+            {property.images.length > 1 && (
+              <button
+                onClick={() =>
+                  setGalleryImageIndex(prev =>
+                    prev === property.images.length - 1 ? 0 : prev + 1
+                  )
+                }
+                className="absolute right-2 text-white text-3xl p-2 bg-black bg-opacity-30 rounded-full hover:bg-opacity-50"
+              >
+                <ArrowRight className="w-6 h-6" />
+              </button>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );

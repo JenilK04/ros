@@ -1,8 +1,10 @@
-const { generateARForProperty } = require('./arController');
-const Property = require('../models/Property');
-const mongoose = require('mongoose');
+// backend/controller/propertiesController.js
+const Property = require("../models/Property");
+const mongoose = require("mongoose");
+const {generateARFromProperty} = require("../middleware/tripoAI.js");
 
 // ✅ Get property by ID
+// backend/controller/propertiesController.js
 const getbyidProperties = async (req, res) => {
   try {
     const propertyId = req.params.id;
@@ -13,9 +15,7 @@ const getbyidProperties = async (req, res) => {
     }
 
     const property = await Property.findById(propertyId);
-    if (!property) {
-      return res.status(404).json({ msg: "Property not found." });
-    }
+    if (!property) return res.status(404).json({ msg: "Property not found." });
 
     let responseProperty = property.toObject();
 
@@ -27,6 +27,10 @@ const getbyidProperties = async (req, res) => {
         delete responseProperty.contactEmail;
       }
     }
+
+    // Include AR progress in response
+    // Default 0 if undefined
+    responseProperty.arProgress = responseProperty.arProgress || 0;
 
     res.json(responseProperty);
   } catch (error) {
@@ -84,16 +88,9 @@ const postProperty = async (req, res) => {
       userId: req.user.id
     });
 
-    // ✅ Generate AR model
-    try {
-      const arModelBase64 = await generateARForProperty(images, null);
-      newProperty.arModel = arModelBase64;
-    } catch (err) {
-      console.error("AR generation failed:", err);
-    }
-
     const savedProperty = await newProperty.save();
     res.status(201).json(savedProperty);
+
   } catch (error) {
     console.error('Error adding property:', error);
     res.status(500).json({ msg: 'Server error', error: error.message });
@@ -129,15 +126,6 @@ const updateProperty = async (req, res) => {
     property.contactEmail = contactEmail;
 
     // ✅ If images changed → regenerate AR
-    if (images && JSON.stringify(images) !== JSON.stringify(property.images)) {
-      property.images = images;
-      try {
-        property.arModel = await generateARForProperty(images, id);
-      } catch (err) {
-        console.error("AR regeneration failed:", err);
-      }
-    }
-
     const savedProperty = await property.save();
     res.json({ msg: 'Property updated successfully', property: savedProperty });
   } catch (err) {
@@ -201,6 +189,48 @@ const removeInquiry = async (req, res) => {
   }
 };
 
+const arProgressStore = {}; // { [propertyId]: { progress, status, arModel } }
+
+const generateAR = async (req, res) => {
+  try {
+    const propertyId = req.params.id;
+    const property = await Property.findById(propertyId);
+    if (!property) return res.status(404).json({ msg: "Property not found" });
+
+    // initialize progress
+    arProgressStore[propertyId] = { progress: 0, status: "running", arModel: null };
+
+    // Run AR process with callback
+    generateARFromProperty(property, (progress) => {
+      arProgressStore[propertyId].progress = progress; // 0–100
+    })
+      .then((modelUrl) => {
+        arProgressStore[propertyId].progress = 100;
+        arProgressStore[propertyId].status = "success";
+        arProgressStore[propertyId].arModel = modelUrl;
+      })
+      .catch((err) => {
+        arProgressStore[propertyId].status = "failed";
+        console.error("AR generation failed:", err.message);
+      });
+
+    res.json({ msg: "AR generation started", taskId: propertyId });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "Server error", error: err.message });
+  }
+};
+
+// Endpoint to get progress
+const getARProgress = (req, res) => {
+  const taskId = req.params.id;
+  const progressData = arProgressStore[taskId];
+  if (!progressData) return res.status(404).json({ msg: "No task found" });
+  res.json(progressData);
+};
+
+
+
 module.exports = {
   getbyidProperties,
   getAllProperties,
@@ -208,5 +238,7 @@ module.exports = {
   updateProperty,
   deleteProperty,
   addInquiry,
-  removeInquiry
+  removeInquiry,
+  generateAR,
+  getARProgress
 };

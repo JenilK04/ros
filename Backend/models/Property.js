@@ -23,6 +23,7 @@ const PropertySchema = new mongoose.Schema({
   contactEmail: { type: String, required: true, trim: true },
   images: [{ type: String }],
   arModel: [{type: String}],
+  arProgress: {type: Number, default: 0}, // 0-100%
   createdAt: { type: Date, default: Date.now },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   inquiredBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User', default: [] }]
@@ -30,15 +31,3 @@ const PropertySchema = new mongoose.Schema({
 
 module.exports = mongoose.model('Property', PropertySchema);
 
-PropertySchema.pre("save", async function(next) {
-  // Only generate AR if images changed
-  if (this.isModified("images") && this.images.length > 0) {
-    try {
-      const base64AR = await generateARForProperty(this.images, this._id);
-      this.arModel = base64AR;
-    } catch (err) {
-      console.error("Failed to auto-generate AR model:", err);
-    }
-  }
-  next();
-});
