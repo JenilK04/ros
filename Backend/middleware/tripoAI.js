@@ -1,16 +1,19 @@
 // services/arService.js
-const fs = require("fs");
-const path = require("path");
-const axios = require("axios");
-const FormData = require("form-data");
-const Property = require("../models/Property");
+import fs from "fs";
+import path from "path";
+import axios from "axios";
+import FormData from "form-data";
+import Property from "../models/Property.js"; // Note the .js extension in ESM
+import dotenv from 'dotenv';
+dotenv.config();
+
 
 const TRIPO_API_KEY = process.env.TRIPO_API_KEY;
-const tempDir = path.join(__dirname, "..", "temp");
+const tempDir = path.join(path.resolve(), "temp");
 if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
 
 // Upload base64 image to Tripo
-async function uploadBase64ToTripo(base64Image, fileName = "temp.jpg") {
+export async function uploadBase64ToTripo(base64Image, fileName = "temp.jpg") {
   try {
     const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, "");
     const buffer = Buffer.from(base64Data, "base64");
@@ -47,7 +50,7 @@ async function uploadBase64ToTripo(base64Image, fileName = "temp.jpg") {
 }
 
 // Generate AR model for a property with proper status handling
-async function generateARFromProperty(propertyId, onProgress = null) {
+export async function generateARFromProperty(propertyId, onProgress = null) {
   try {
     const property = await Property.findById(propertyId);
     if (!property || !property.images || property.images.length === 0) {
@@ -135,5 +138,3 @@ async function generateARFromProperty(propertyId, onProgress = null) {
     throw err;
   }
 }
-
-module.exports = { generateARFromProperty };

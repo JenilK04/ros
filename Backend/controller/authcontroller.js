@@ -1,8 +1,7 @@
-const User = require('../models/Users');
-const Admin = require('../models/Admin')
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const{validationResult} = require('express-validator'); 
+import User from '../models/Users.js';
+import Admin from '../models/Admin.js'
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 const register = async (req, res) => {
   try {
@@ -129,7 +128,7 @@ const editUser = async (req, res) => {
   }
 };
 
-module.exports = {
+export{
   register,
   login,
   user,

@@ -1,11 +1,14 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-require('dotenv').config();
-const authRoutes = require('./routes/authroutes');
-const propertiesRoute = require('./routes/propertiesRoute');
-const adminroutes = require('./routes/adminroutes.js');
+import express from 'express';
+import mongoose from 'mongoose';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import authRoutes from './routes/authroutes.js';
+import propertiesRoute from './routes/propertiesRoute.js';
+import adminroutes from './routes/adminroutes.js';
+import path from "path";
+import { fileURLToPath } from "url";
 const app = express();
+dotenv.config();
 app.use(cors());
 
 // ✅ Set payload size limit to 16MB (you can increase further if needed)
@@ -16,6 +19,11 @@ app.use(express.urlencoded({ extended: true, limit: '16mb' }));
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.error('DB error', err));
+
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.use("/models", express.static(path.join(__dirname, "models")));
 
 // Routes
 app.get('/', (req, res) => res.send('API Running'));

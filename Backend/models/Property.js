@@ -1,5 +1,5 @@
 // backend/models/Property.js
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const PropertySchema = new mongoose.Schema({
   title: { type: String, required: true, trim: true },
@@ -24,10 +24,11 @@ const PropertySchema = new mongoose.Schema({
   images: [{ type: String }],
   arModel: [{type: String}],
   arProgress: {type: Number, default: 0}, // 0-100%
+  arModelLocal: {type: String, default: ""}, // Local path to downloaded AR model
   createdAt: { type: Date, default: Date.now },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   inquiredBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User', default: [] }]
 });
 
-module.exports = mongoose.model('Property', PropertySchema);
+export default mongoose.model('Property', PropertySchema);
 

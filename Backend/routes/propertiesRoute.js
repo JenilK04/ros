@@ -1,8 +1,9 @@
 // backend/routes/propertyRoutes.js
-const express = require('express');
+import express from 'express';
+import {getbyidProperties,getAllProperties,postProperty, addInquiry,removeInquiry,deleteProperty,updateProperty,generateAR,getARProgress,downloadAR} from '../controller/propertiesController.js';
+import {verifyToken} from '../middleware/verifyToken.js';
+
 const router = express.Router();
-const {getbyidProperties,getAllProperties,postProperty, addInquiry,removeInquiry,deleteProperty,updateProperty,generateAR,getARProgress} = require('../controller/propertiesController');
-const {verifyToken} = require('../middleware/verifyToken');
 
 router.use(verifyToken); // Apply token verification middleware to all routes
 router.post('/', postProperty);
@@ -14,5 +15,7 @@ router.put('/:id', updateProperty);
 router.get('/:id', getbyidProperties);
 router.post("/:id/generate-ar", generateAR);
 router.get("/:id/ar-progress", getARProgress);
+router.post("/download-ar", downloadAR);
 
-module.exports = router;
+
+export default router;

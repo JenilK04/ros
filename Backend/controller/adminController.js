@@ -1,6 +1,6 @@
-const User = require('../models/Users');
-const mongoose = require('mongoose')
-const Property = require('../models/Property')
+import User from '../models/Users.js';
+import mongoose from 'mongoose'
+import Property from '../models/Property.js'
 
 const getAllUsers = async (req, res) => {
   try {
@@ -77,4 +77,4 @@ const deleteUser = async (req, res) => {
   }
 };
 
-module.exports = { getAllUsers, isAdmin, deleteUser };
+export{ getAllUsers, isAdmin, deleteUser };

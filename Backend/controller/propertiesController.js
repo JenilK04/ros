@@ -1,7 +1,7 @@
 // backend/controller/propertiesController.js
-const Property = require("../models/Property");
-const mongoose = require("mongoose");
-const {generateARFromProperty} = require("../middleware/tripoAI.js");
+import Property from "../models/Property.js";
+import mongoose from "mongoose";
+import {generateARFromProperty} from "../middleware/tripoAI.js";
 
 // ✅ Get property by ID
 // backend/controller/propertiesController.js
@@ -228,10 +228,45 @@ const getARProgress = (req, res) => {
   if (!progressData) return res.status(404).json({ msg: "No task found" });
   res.json(progressData);
 };
+const TRIPO_API_KEY = process.env.TRIPO_API_KEY || "YOUR_TRIPO_KEY";
+const downloadAR = async (req, res) => {
+  const { arModel, propertyId } = req.body;
+  if (!arModel || !propertyId)
+    return res.status(400).json({ error: "Missing parameters" });
+
+  try {
+    // Fetch remote AR file from Tripo with API key
+    const response = await fetch(arModel, {
+      headers: {
+        Authorization: `Bearer ${TRIPO_API_KEY}`,
+      },
+    });
+
+    if (!response.ok)
+      throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`);
+
+    const buffer = await response.arrayBuffer();
+    const filePath = path.join(__dirname, "../models", `${propertyId}.glb`);
+
+    // Ensure directory exists
+    fs.mkdirSync(path.dirname(filePath), { recursive: true });
+    fs.writeFileSync(filePath, Buffer.from(buffer));
+
+    // Save local path in MongoDB (pseudo code)
+    // await Property.findByIdAndUpdate(propertyId, { arModelLocal: `/models/${propertyId}.glb` });
+
+    res.json({
+      message: "AR downloaded successfully",
+      localPath: `/models/${propertyId}.glb`,
+    });
+  } catch (err) {
+    console.error("Error downloading AR model:", err);
+    res.status(500).json({ error: "Failed to download AR model" });
+  }
+};
 
 
-
-module.exports = {
+export {
   getbyidProperties,
   getAllProperties,
   postProperty,
@@ -240,5 +275,6 @@ module.exports = {
   addInquiry,
   removeInquiry,
   generateAR,
-  getARProgress
+  getARProgress,
+  downloadAR
 };
