@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import API from '../../services/api';
 import AddPropertyModal from './addProperty';
 import ARViewer from './ARviewer';
+import ARModelViewer from './ArModelViewer';
 import {
   MapPin, IndianRupeeIcon, Bed, Bath, Ruler,
   Building, Home, LandPlot, Trash2,
@@ -22,6 +23,8 @@ const PropertyDetails = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [inquired, setInquired] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showARViewer, setShowARViewer] = useState(false);
+
 
   // Fullscreen Gallery
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
@@ -195,16 +198,33 @@ const PropertyDetails = () => {
         {/* Content */}
         <div className="p-4 sm:p-6 md:p-8">
           {/* Title & Price */}
-          <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-4 gap-2">
-            <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900">{property.title}</h1>
-            <div className="flex items-center text-green-700 font-bold text-2xl md:text-3xl">
-              <IndianRupeeIcon className="h-6 w-6 md:h-7 md:w-7 mr-1" />
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-3">
+            <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 break-words">{property.title}</h1>
+            <div className="flex items-center text-green-700 font-bold text-xl md:text-2xl bg-green-100 px-3 py-1 rounded-lg shadow-sm">
+              <IndianRupeeIcon className="h-5 w-5 md:h-6 md:w-6 mr-1" />
               {parseFloat(property.price).toLocaleString('en-IN')}
-              {property.listingType === 'For Rent' ? '/month' : ''}
+              {property.listingType === 'For Rent' ? <span className="text-base font-normal ml-1">/month</span> : ''}
             </div>
           </div>
-          {property._id && <ARViewer propertyId={property._id} />}
-
+          {property._id && (
+            <div className="mb-4">
+              <ARViewer propertyId={property._id} />
+            </div>
+          )}
+          <div className="flex flex-col sm:flex-row gap-2 mb-4">
+            <button
+              onClick={() => setShowARViewer(true)}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition shadow w-full sm:w-auto"
+            >
+              View 3D Model
+            </button>
+          </div>
+          {/* AR/3D Viewer Modal */}
+          {showARViewer && (
+            <ARModelViewer
+              onClose={() => setShowARViewer(false)}
+            />
+          )}
           {/* Address */}
           <div className="flex items-start text-gray-600 text-base sm:text-lg mb-4">
             <MapPin className="h-5 w-5 mr-2 text-blue-500 shrink-0" />

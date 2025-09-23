@@ -189,7 +189,11 @@ const removeInquiry = async (req, res) => {
   }
 };
 
-const arProgressStore = {}; // { [propertyId]: { progress, status, arModel } }
+import axios from "axios";
+const TRIPO_API_KEY = process.env.TRIPO_API_KEY;
+
+// In-memory store for AR progress
+const arProgressStore = {}; 
 
 const generateAR = async (req, res) => {
   try {
@@ -197,74 +201,69 @@ const generateAR = async (req, res) => {
     const property = await Property.findById(propertyId);
     if (!property) return res.status(404).json({ msg: "Property not found" });
 
-    // initialize progress
-    arProgressStore[propertyId] = { progress: 0, status: "running", arModel: null };
+    // Initialize progress store
+    arProgressStore[propertyId] = { progress: 0, status: "running", taskId: null };
 
-    // Run AR process with callback
-    generateARFromProperty(property, (progress) => {
+    // Run AR process
+    generateARFromProperty(propertyId, (progress) => {
       arProgressStore[propertyId].progress = progress; // 0–100
     })
-      .then((modelUrl) => {
+      .then((taskId) => {
         arProgressStore[propertyId].progress = 100;
         arProgressStore[propertyId].status = "success";
-        arProgressStore[propertyId].arModel = modelUrl;
+        arProgressStore[propertyId].taskId = taskId;
       })
       .catch((err) => {
         arProgressStore[propertyId].status = "failed";
         console.error("AR generation failed:", err.message);
       });
 
-    res.json({ msg: "AR generation started", taskId: propertyId });
+    res.json({ msg: "AR generation started" });
   } catch (err) {
     console.error(err);
     res.status(500).json({ msg: "Server error", error: err.message });
   }
 };
 
-// Endpoint to get progress
 const getARProgress = (req, res) => {
-  const taskId = req.params.id;
-  const progressData = arProgressStore[taskId];
+  const propertyId = req.params.id;
+  const progressData = arProgressStore[propertyId];
   if (!progressData) return res.status(404).json({ msg: "No task found" });
   res.json(progressData);
 };
-const TRIPO_API_KEY = process.env.TRIPO_API_KEY || "YOUR_TRIPO_KEY";
+
 const downloadAR = async (req, res) => {
-  const { arModel, propertyId } = req.body;
-  if (!arModel || !propertyId)
-    return res.status(400).json({ error: "Missing parameters" });
-
   try {
-    // Fetch remote AR file from Tripo with API key
-    const response = await fetch(arModel, {
-      headers: {
-        Authorization: `Bearer ${TRIPO_API_KEY}`,
-      },
-    });
+    const propertyId = req.params.id;
+    const property = await Property.findById(propertyId);
+    if (!property) return res.status(404).json({ msg: "Property not found" });
 
-    if (!response.ok)
-      throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`);
+    // Check if AR task exists
+    if (!property.arTaskId) {
+      return res.status(400).json({ msg: "AR model not generated yet. Please generate first." });
+    }
 
-    const buffer = await response.arrayBuffer();
-    const filePath = path.join(__dirname, "../models", `${propertyId}.glb`);
+    // Get fresh task info from Tripo
+    const tripoRes = await axios.get(
+      `https://api.tripo3d.ai/v2/openapi/task/${property.arTaskId}`,
+      { headers: { Authorization: `Bearer ${TRIPO_API_KEY}` } }
+    );
 
-    // Ensure directory exists
-    fs.mkdirSync(path.dirname(filePath), { recursive: true });
-    fs.writeFileSync(filePath, Buffer.from(buffer));
+    const taskData = tripoRes.data?.data;
+    if (!taskData || taskData.status !== "success") {
+      return res.status(400).json({ msg: "AR model not ready yet", status: taskData?.status || "unknown" });
+    }
 
-    // Save local path in MongoDB (pseudo code)
-    // await Property.findByIdAndUpdate(propertyId, { arModelLocal: `/models/${propertyId}.glb` });
+    // Fresh signed download link (valid ~60s)
+    const modelUrl = taskData.output?.model || taskData.output?.base_model || taskData.output?.pbr_model;
+    if (!modelUrl) return res.status(404).json({ msg: "No downloadable model found" });
 
-    res.json({
-      message: "AR downloaded successfully",
-      localPath: `/models/${propertyId}.glb`,
-    });
+    res.json({ arModel: modelUrl });
   } catch (err) {
-    console.error("Error downloading AR model:", err);
-    res.status(500).json({ error: "Failed to download AR model" });
+    console.error("Error fetching AR download link:", err.message);
+    res.status(500).json({ msg: "Server error", error: err.message });
   }
 };
-
 
 export {
   getbyidProperties,

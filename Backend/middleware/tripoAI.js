@@ -50,6 +50,7 @@ export async function uploadBase64ToTripo(base64Image, fileName = "temp.jpg") {
 }
 
 // Generate AR model for a property with proper status handling
+// Generate AR model for a property with proper status handling
 export async function generateARFromProperty(propertyId, onProgress = null) {
   try {
     const property = await Property.findById(propertyId);
@@ -91,7 +92,6 @@ export async function generateARFromProperty(propertyId, onProgress = null) {
     if (!taskId) throw new Error("Failed to create Tripo task");
 
     // Poll for task completion
-    let modelUrl = null;
     const maxRetries = 120; // up to 10 minutes
     const waitTime = 5000; // 5 seconds
 
@@ -105,12 +105,12 @@ export async function generateARFromProperty(propertyId, onProgress = null) {
       if (!statusData) throw new Error("Invalid Tripo status response");
 
       if (statusData.status === "success") {
-        // Task completed successfully
-        modelUrl =
-          statusData.output?.model ||
-          statusData.output?.base_model ||
-          statusData.output?.pbr_model;
-        break;
+        // ✅ Save only taskId in property (not expiring model link)
+        property.arTaskId = taskId;
+        await property.save();
+
+        console.log("3D task saved for property:", property._id);
+        return taskId;
       } else if (
         ["failed", "banned", "expired", "cancelled", "unknown"].includes(
           statusData.status
@@ -125,16 +125,10 @@ export async function generateARFromProperty(propertyId, onProgress = null) {
       }
     }
 
-    if (!modelUrl) throw new Error("3D model generation timed out");
-
-    // Save model URL in property
-    property.arModel = modelUrl;
-    await property.save();
-
-    console.log("3D model saved for property:", property._id);
-    return modelUrl;
+    throw new Error("3D model generation timed out");
   } catch (err) {
     console.error("Error generating AR for property:", err.message);
     throw err;
   }
 }
+

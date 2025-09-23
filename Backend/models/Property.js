@@ -24,6 +24,7 @@ const PropertySchema = new mongoose.Schema({
   images: [{ type: String }],
   arModel: [{type: String}],
   arProgress: {type: Number, default: 0}, // 0-100%
+  arTaskId: {type: String, default: ""}, // ID from AR generation service
   arModelLocal: {type: String, default: ""}, // Local path to downloaded AR model
   createdAt: { type: Date, default: Date.now },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },

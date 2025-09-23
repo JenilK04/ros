@@ -1,18 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
-import "@google/model-viewer";
 import API from "../../services/api";
 
 const ARViewer = ({ propertyId }) => {
-  const [arModel, setArModel] = useState(null); // Local URL to display
-  const [arModelRemote, setArModelRemote] = useState(null); // Remote Tripo URL
+  const [arModelLink, setArModelLink] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [showAR, setShowAR] = useState(false);
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState("idle");
   const [propertyFetched, setPropertyFetched] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
   const intervalRef = useRef(null);
 
-  // Fetch property data on mount
+  // Fetch property info initially
   useEffect(() => {
     const fetchProperty = async () => {
       try {
@@ -20,17 +18,14 @@ const ARViewer = ({ propertyId }) => {
         const res = await API.get(`/properties/${propertyId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-
-        if (res.data?.arModel) setArModelRemote(res.data.arModel);
-        if (res.data?.arModelLocal)
-          setArModel(`http://localhost:5000/api/properties/${res.data.arModelLocal}`);
+        // Property may already have a direct AR model (optional)
+        if (res.data?.arModel) setArModelLink(res.data.arModel);
       } catch (err) {
         console.error("Error fetching property:", err);
       } finally {
         setPropertyFetched(true);
       }
     };
-
     fetchProperty();
     return () => clearInterval(intervalRef.current);
   }, [propertyId]);
@@ -40,17 +35,18 @@ const ARViewer = ({ propertyId }) => {
     const token = localStorage.getItem("token");
     intervalRef.current = setInterval(async () => {
       try {
-        const res = await API.get(`/properties/${propertyId}/ar-progress/`, {
+        const res = await API.get(`/properties/${propertyId}/ar-progress`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-
-        const { progress: prog, status: stat, arModel } = res.data;
+        const { progress: prog, status: stat } = res.data;
         setProgress(prog);
         setStatus(stat);
 
-        if (stat === "success" && arModel) {
+        if (stat === "success") {
           clearInterval(intervalRef.current);
-          downloadARModel(arModel);
+          // Fetch fresh AR model link
+          handleViewLink();
+          setLoading(false);
         } else if (stat === "failed") {
           clearInterval(intervalRef.current);
           setLoading(false);
@@ -64,41 +60,7 @@ const ARViewer = ({ propertyId }) => {
     }, 2000);
   };
 
-  // Download AR model from remote to local server
-  const downloadARModel = async (remoteUrl) => {
-    if (!remoteUrl) return;
-
-    try {
-      setLoading(true);
-      setProgress(0);
-      setStatus("downloading");
-
-      const token = localStorage.getItem("token");
-
-      const res = await API.post(
-        `/properties/download-ar`,
-        { arModel: remoteUrl, propertyId },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      if (res.data?.localPath) {
-        const localUrl = `http://localhost:5000/api/properties/${res.data.localPath}`;
-        setArModel(localUrl);
-        setShowAR(true);
-        setProgress(100);
-        setStatus("success");
-      } else {
-        alert("❌ Failed to download AR model.");
-        setLoading(false);
-      }
-    } catch (err) {
-      console.error("Failed to download AR model:", err);
-      setLoading(false);
-      alert("⚠️ Error downloading AR model. Try again later.");
-    }
-  };
-
-  // Trigger AR generation if needed
+  // Start AR generation
   const generateAR = async () => {
     setLoading(true);
     setStatus("starting");
@@ -119,74 +81,107 @@ const ARViewer = ({ propertyId }) => {
     }
   };
 
-  // Handle AR view button
-  const handleViewAR = async () => {
-    if (!propertyFetched) return;
-
-    if (arModel) {
-      setShowAR(true); // Local exists → show immediately
-      return;
+  // Fetch AR download link
+  const handleViewLink = async () => {
+    try {
+      if (!arModelLink) {
+        setLoading(true);
+        const token = localStorage.getItem("token");
+        const res = await API.get(`/properties/${propertyId}/download-ar`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setArModelLink(res.data.arModel);
+      }
+      setShowPopup(true);
+    } catch (err) {
+      console.error("Error fetching AR model link:", err);
+      alert("⚠️ AR model not ready yet. Please wait for generation to complete.");
+    } finally {
+      setLoading(false);
     }
+  };
 
-    if (arModelRemote && !arModel) {
-      downloadARModel(arModelRemote); // Remote exists → download first
-      return;
-    }
-
-    if (!arModelRemote && !arModel) {
-      generateAR(); // Neither exists → generate
-      return;
+  // Copy AR link to clipboard
+  const copyLink = () => {
+    if (arModelLink) {
+      navigator.clipboard.writeText(arModelLink);
+      alert("✅ AR model link copied!");
     }
   };
 
   return (
     <>
-      <button
-        onClick={handleViewAR}
-        disabled={loading || !propertyFetched}
-        className={`flex items-center gap-2 px-4 py-2 rounded-md mb-4 ${
-          loading || !propertyFetched
-            ? "bg-gray-400 cursor-not-allowed"
-            : "bg-blue-600 text-white hover:bg-blue-700"
-        }`}
-      >
-        {loading
-          ? status === "downloading"
-            ? "Downloading AR..."
-            : "Generating AR..."
-          : "View in AR"}
-      </button>
+      <div className="flex gap-2 mb-4">
+        {/* Generate Button */}
+        <button
+          onClick={generateAR}
+          disabled={loading || !propertyFetched}
+          className={`px-4 py-2 rounded-md ${
+            loading || !propertyFetched
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-green-600 text-white hover:bg-green-700"
+          }`}
+        >
+          {loading ? (status === "running" ? "Generating..." : "Starting...") : "Generate AR"}
+        </button>
 
+        {/* View/Get Link Button */}
+        <button
+          onClick={handleViewLink}
+          disabled={!arModelLink && status !== "success"}
+          title={!arModelLink && status !== "success" ? "Generate AR first" : ""}
+          className={`px-4 py-2 rounded-md ${
+            arModelLink || status === "success"
+              ? "bg-blue-600 text-white hover:bg-blue-700"
+              : "bg-gray-400 cursor-not-allowed"
+          }`}
+        >
+          View AR Link
+        </button>
+      </div>
+
+      {/* Progress Bar */}
       {loading && (
-        <>
-          <div className="w-full max-w-md bg-gray-200 rounded-full h-4 mb-2">
+        <div className="w-full max-w-md mb-4">
+          <div className="bg-gray-200 rounded-full h-4 mb-2">
             <div
               className="bg-blue-500 h-4 rounded-full transition-all"
               style={{ width: `${progress}%` }}
             />
           </div>
           <p>Status: {status} | Progress: {progress}%</p>
-        </>
+        </div>
       )}
 
-      {showAR && arModel && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-          <div className="relative w-full max-w-3xl bg-white rounded-lg p-4">
+      {/* Popup Modal */}
+      {showPopup && arModelLink && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-[90%] max-w-lg relative">
             <button
-              onClick={() => setShowAR(false)}
-              className="absolute top-2 right-2 text-gray-700 hover:text-gray-900 font-bold"
+              onClick={() => setShowPopup(false)}
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
             >
               ✖
             </button>
-
-            <model-viewer
-              src={arModel}
-              alt="AR Model"
-              ar
-              auto-rotate
-              camera-controls
-              style={{ width: "100%", height: "500px" }}
-            />
+            <h2 className="text-xl font-semibold mb-4">AR Model Link</h2>
+            <p className="mb-2 break-all text-sm">{arModelLink}</p>
+            <div className="flex gap-2">
+              <button
+                onClick={copyLink}
+                className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"
+              >
+                Copy
+              </button>
+              <a
+                href={arModelLink}
+                download
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                Download
+              </a>
+            </div>
           </div>
         </div>
       )}
