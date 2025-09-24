@@ -37,3 +37,42 @@ export const getEvents = async (req, res) => {
     res.status(500).json({ success: false, message: "Failed to fetch events" });
   }
 };
+
+export const deleteEvent = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const event = await Event.findById(eventId);
+
+    if (!event) {
+      return res.status(404).json({ success: false, message: "Event not found" });
+    }
+
+    // Only creator can delete
+    if (event.createdBy.toString() !== req.user.id) {
+      return res.status(403).json({ success: false, message: "Not authorized" });
+    }
+
+    await Event.findByIdAndDelete(eventId);
+
+    res.status(200).json({ success: true, message: "Event deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting event:", err);
+    res.status(500).json({ success: false, message: "Failed to delete event" });
+  }
+};
+
+export const getEventById = async (req,res) => {
+  try{
+    const {eventId} = req.params;
+    const event = await Event.findById(eventId).populate('createdBy', 'firstName lastName email companyName');
+
+    if(!event){
+      return res.status(404).json({success:false, message:"Event not found"});
+    }
+
+    res.status(200).json({ success: true, event });
+  } catch (err) {
+    console.error("Error fetching event:", err);
+    res.status(500).json({ success: false, message: "Failed to fetch event" });
+  }
+}
