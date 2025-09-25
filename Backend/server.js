@@ -6,9 +6,9 @@ import authRoutes from './routes/authroutes.js';
 import propertiesRoute from './routes/propertiesRoute.js';
 import adminroutes from './routes/adminroutes.js';
 import eventRoutes from './routes/eventRoutes.js';
+import postHogRoutes from './routes/postHogRoutes.js';
 import path from "path";
 import { fileURLToPath } from "url";
-import event from './models/event.js';
 const app = express();
 dotenv.config();
 app.use(cors());
@@ -31,7 +31,8 @@ app.use("/models", express.static(path.join(__dirname, "models")));
 app.get('/', (req, res) => res.send('API Running'));
 app.use('/api/auth', authRoutes);
 app.use('/api/properties', propertiesRoute);
-app.use('/api/admin',adminroutes)
+app.use('/api/admin',adminroutes);
+app.use('/api/admin/analytics', postHogRoutes);
 app.use('/api', eventRoutes);
 
 const PORT = process.env.PORT || 5000;

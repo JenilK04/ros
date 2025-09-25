@@ -16,6 +16,7 @@ const PropertyDetails = lazy(() => import("./Components/User/propertyDetails"));
 const ManageUsersPage = lazy(() => import("./Components/Admin/manageUsers-A"));
 const UserDetails = lazy(() => import("./Components/Admin/userDetails"));
 const Event = lazy(() => import("./Components/User/Event"));
+const Analytics = lazy(() => import("./Components/Admin/anaylitcs"));
 
 function App() {
   return (
@@ -59,6 +60,17 @@ function App() {
                   <ProtectedUser>
                     <ProtectedAdmin allowedRole="admin">
                       <UserDetails />
+                    </ProtectedAdmin>
+                  </ProtectedUser>
+                }
+              />
+
+              <Route
+                path="analytics"
+                element={
+                  <ProtectedUser>
+                    <ProtectedAdmin allowedRole="admin">
+                      <Analytics />
                     </ProtectedAdmin>
                   </ProtectedUser>
                 }
