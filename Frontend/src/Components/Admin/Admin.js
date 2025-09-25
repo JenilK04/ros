@@ -18,11 +18,10 @@ const navigate = useNavigate()
           <p className="text-gray-500">Manage system settings, users, and reports.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6" >
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6" >
           <Card title="Manage Users" icon={<UserCog className="h-8 w-8 text-blue-600"/>} onClick={() => navigate('/manageusers')} />
           <Card title="Reports & Analytics" icon={<BarChart2 className="h-8 w-8 text-green-600" />} />
-          <Card title="System Settings" icon={<Settings className="h-8 w-8 text-purple-600" />} />
-          <Card title="Events" icon={<Calendar className="h-8 w-8 text-pink/-600" />}  onClick={() => navigate('/events')}/>
+          <Card title="Events" icon={<Calendar className="h-8 w-8 text-pink-600" />}  onClick={() => navigate('/events')}/>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
