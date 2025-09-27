@@ -67,7 +67,7 @@ const HomePage = () => {
         </h2>
         <p className="max-w-2xl mx-auto text-gray-600 mb-6 px-2 sm:px-0">
           Your one-stop ecosystem for buying, selling, and managing properties. 
-          Whether you are a Buyer, Seller, Developer, or Agent — we bring everyone together.
+          Whether you are a Buyer, Seller, Or Developer — we bring everyone together.
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-4">
           <Link
@@ -102,7 +102,7 @@ const HomePage = () => {
           linkText="Start Buying"
         />
         <Card
-          title="For Developers & Agents"
+          title="For Developers"
           description="Showcase projects, gain visibility, and connect with genuine clients to grow your business."
           img="https://images.pexels.com/photos/3184307/pexels-photo-3184307.jpeg?auto=compress&cs=tinysrgb&w=1200"
           link="/login"

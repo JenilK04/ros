@@ -10,7 +10,7 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-  const { loginUser } = useUser();
+  const { loginUser , user } = useUser();
 
   // Track clicks on Register
   const handleRegisterClick = () => {
@@ -26,16 +26,18 @@ const Login = () => {
 
   try {
     const response = await API.post('/auth/login', { email, password });
-    const { token, role, user } = response.data;
+    const { token, role } = response.data;
 
     console.log('Login success:', response.data);
 
     // Identify the user in PostHog
-    posthog.identify(loginUser._id, {
-      email: loginUser.email,
-      name: loginUser.frontName,
+    if (user && user._id) {
+    posthog.identify(user._id, {
+      email: user.email,
+      name: user.firstName,
       role: role,
     });
+  }
 
     // Track successful login
     posthog.capture('login_success', { role });

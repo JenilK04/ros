@@ -43,7 +43,7 @@ const UserDetails = () => {
 
   const isProfessional =
     user.userType &&
-    (user.userType.includes('agent') || user.userType.includes('developer'));
+    ( user.userType.includes('developer'));
   const hasProfessionalDetails =
     isProfessional &&
     (user.companyName ||

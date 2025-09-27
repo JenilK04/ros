@@ -8,7 +8,6 @@ import API from '../../services/api';
 const userTypes = [
   { value: 'buyer', label: 'Property Buyer' },
   { value: 'seller', label: 'Property Seller' },
-  { value: 'agent', label: 'Real Estate Agent' },
   { value: 'developer', label: 'Property Developer' }
 ];
 
@@ -224,7 +223,7 @@ const Profile = () => {
             </Section>
 
             {/* Professional Info */}
-            {(formData.userType === 'agent' || formData.userType === 'developer') && (
+            {(formData.userType === 'developer') && (
               <Section title="Professional Info" icon={<BriefcaseBusiness className="text-purple-600 h-5 w-5" />} isEditing={isEditing}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Input label="Company" name="companyName" value={formData.companyName} onChange={handleInputChange} isEditing={isEditing} />

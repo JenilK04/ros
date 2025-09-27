@@ -117,8 +117,8 @@ const Registration = () => {
     }
 
     // Professional Information (conditional)
-    if (formData.userType === 'agent' || formData.userType === 'developer') {
-      if (!formData.companyName.trim()) errors.companyName = 'Company Name is required for agents/developers.';
+    if (formData.userType === 'developer') {
+      if (!formData.companyName.trim()) errors.companyName = 'Company Name is required for developers.';
       // Add more validation for licenseNumber, experience, specialization if needed
     }
 
@@ -169,7 +169,6 @@ const Registration = () => {
   const userTypes = [
     { value: 'buyer', label: 'Property Buyer', icon: Home },
     { value: 'seller', label: 'Property Seller', icon: Building },
-    { value: 'agent', label: 'Real Estate Agent', icon: User },
     { value: 'developer', label: 'Property Developer', icon: Building }
   ];
 
@@ -219,7 +218,7 @@ const Registration = () => {
               Join Our Real Estate Network
             </h2>
             <p className="mt-2 text-xs sm:text-sm text-gray-600">
-              Connect with buyers, sellers, agents, and developers in one platform
+              Connect with buyers, sellers and developers in one platform
             </p>
           </div>
 
@@ -394,8 +393,8 @@ const Registration = () => {
                   </div>
                 </div>
 
-                {/* Professional Information (for agents/developers) */}
-                {(formData.userType === 'agent' || formData.userType === 'developer') && (
+                {/* Professional Information (for /developers) */}
+                {(formData.userType === 'developer') && (
                   <div className="space-y-4 border-t pt-6">
                     <h3 className="text-lg font-medium text-gray-900">Professional Information</h3>
 
