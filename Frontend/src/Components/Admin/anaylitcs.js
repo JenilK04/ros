@@ -1,5 +1,4 @@
 // src/Components/Admin/AdminAnalytics.jsx
-
 import React, { useEffect, useState, useRef } from "react";
 import Navbar from "../User/navbar";
 import ReactApexChart from "react-apexcharts";
@@ -11,7 +10,7 @@ import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
 import { format } from "date-fns";
 
-// --- Reusable DatePicker Component (No changes needed here) ---
+// --- Reusable DatePicker Component ---
 const DatePicker = ({ appliedStartDate, appliedEndDate, onApply }) => {
   const [pickerVisible, setPickerVisible] = useState(false);
   const [selectionRange, setSelectionRange] = useState({
@@ -101,10 +100,11 @@ const DatePicker = ({ appliedStartDate, appliedEndDate, onApply }) => {
   );
 };
 
-
-// --- AdminAnalytics Component (Refactored) ---
+// --- AdminAnalytics Component ---
 const AdminAnalytics = () => {
   const { user } = useUser();
+
+  const [allProperties, setAllProperties] = useState([]);
 
   // --- Chart States ---
   const [loginChartData, setLoginChartData] = useState([]);
@@ -119,7 +119,13 @@ const AdminAnalytics = () => {
     xaxis: { categories: [] },
   });
 
-  // --- 1. UNIFIED GLOBAL FILTERS ---
+  const [propertyChartData, setPropertyChartData] = useState([]);
+  const [propertyChartOptions, setPropertyChartOptions] = useState({
+    chart: { id: "property-bar", toolbar: { show: true } },
+    xaxis: { categories: [] },
+  });
+
+  // --- Global Filters ---
   const [allUsers, setAllUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState("all");
   const [dateRange, setDateRange] = useState({
@@ -127,7 +133,7 @@ const AdminAnalytics = () => {
     endDate: new Date(),
   });
 
-  // Fetch all users for the dropdown (no change)
+  // Fetch users
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -140,25 +146,41 @@ const AdminAnalytics = () => {
     fetchUsers();
   }, []);
 
+  // Fetch properties
+  useEffect(() => {
+    const fetchProperties = async () => {
+      try {
+        const res = await API.get("/properties");
+        setAllProperties(res.data || []);
+      } catch (err) {
+        console.error("Failed to fetch properties", err);
+      }
+    };
+    fetchProperties();
+  }, []);
+
   // --- Fetch Login Analytics ---
   useEffect(() => {
     const fetchLoginAnalytics = async () => {
       if (user?.role !== "admin") return;
       try {
         const params = {
-          // Use the single dateRange state
           startDate: format(dateRange.startDate, "yyyy-MM-dd"),
           endDate: format(dateRange.endDate, "yyyy-MM-dd"),
         };
         if (selectedUser !== "all") params.userId = selectedUser;
 
-        const loginRes = await API.get("/admin/analytics", { params });
-        const loginData = loginRes.data || [];
-        const categories = loginData.map((item) => item.date);
-        const logins = loginData.map((item) => item.logins);
-        const failedLogins = loginData.map((item) => item.failedLogins);
+        const res = await API.get("/admin/analytics", { params });
+        const loginData = res.data || [];
 
-        setLoginChartOptions((prev) => ({ ...prev, xaxis: { categories } }));
+        const categories = loginData.map((item) => item.date || "Unknown");
+        const logins = loginData.map((item) => item.logins || 0);
+        const failedLogins = loginData.map((item) => item.failedLogins || 0);
+
+        setLoginChartOptions((prev) => ({
+          ...prev,
+          xaxis: { categories },
+        }));
         setLoginChartData([
           { name: "Logins", data: logins },
           { name: "Failed Logins", data: failedLogins },
@@ -168,8 +190,7 @@ const AdminAnalytics = () => {
       }
     };
     fetchLoginAnalytics();
-    // --- 2. UPDATED DEPENDENCIES ---
-  }, [user, dateRange, selectedUser]); // Depends on the single dateRange state
+  }, [user, dateRange, selectedUser]);
 
   // --- Fetch Page Views Analytics ---
   useEffect(() => {
@@ -177,7 +198,50 @@ const AdminAnalytics = () => {
       if (user?.role !== "admin") return;
       try {
         const params = {
-           // Use the single dateRange state
+          startDate: format(dateRange.startDate, "yyyy-MM-dd"),
+          endDate: format(dateRange.endDate, "yyyy-MM-dd"),
+        };
+        if (selectedUser !== "all") params.userId = selectedUser;
+
+        const res = await API.get("/admin/analytics/pageviews", { params });
+        const pageData = res.data || [];
+
+        const filteredPages = pageData.filter((item) => {
+          let pathname;
+          try {
+            pathname = new URL(item.page).pathname;
+          } catch {
+            pathname = item.page || "/";
+          }
+          return !(pathname.startsWith("/properties/") && pathname !== "/properties");
+        });
+
+        const pageCats = filteredPages.map((item) => {
+          const parts = (item.page || "").split("/").filter(Boolean);
+          return parts.length > 0 ? parts[parts.length - 1] : "Home";
+        });
+        const users = filteredPages.map((item) => item.users || 0);
+
+        setPageChartOptions((prev) => ({
+          ...prev,
+          xaxis: { categories: pageCats },
+        }));
+        setPageChartData([{ name: "Users per Page", data: users }]);
+      } catch (err) {
+        console.error("Failed to fetch page analytics", err);
+      }
+    };
+    fetchPageAnalytics();
+  }, [user, dateRange, selectedUser]);
+
+  // --- Fetch Property Analytics ---
+  useEffect(() => {
+    const fetchPropertyAnalytics = async () => {
+      if (user?.role !== "admin") return;
+      if (!allProperties || allProperties.length === 0) return; // wait until properties are fetched
+
+      try {
+        const params = {
           startDate: format(dateRange.startDate, "yyyy-MM-dd"),
           endDate: format(dateRange.endDate, "yyyy-MM-dd"),
         };
@@ -186,21 +250,88 @@ const AdminAnalytics = () => {
         const pageRes = await API.get("/admin/analytics/pageviews", { params });
         const pageData = pageRes.data || [];
 
-        const pageCats = pageData.map((item) => {
-          const parts = item.page.split("/").filter(Boolean);
-          return parts.length > 0 ? parts[parts.length - 1] : "Home";
+        // Filter only property pages
+        const propertyPages = pageData.filter((item) => {
+          let pathname;
+          try {
+            pathname = new URL(item.page).pathname;
+          } catch {
+            pathname = item.page.startsWith("/") ? item.page : `/${item.page}`;
+          }
+          return pathname.startsWith("/properties/") && pathname.split("/").length > 2;
         });
-        const users = pageData.map((item) => item.users);
 
-        setPageChartOptions((prev) => ({ ...prev, xaxis: { categories: pageCats } }));
-        setPageChartData([{ name: "Users per Page", data: users }]);
+        // Aggregate users per property ID
+        const propertyUsersMap = {};
+        propertyPages.forEach((item) => {
+          let pathname;
+          try {
+            pathname = new URL(item.page).pathname;
+          } catch {
+            pathname = item.page.startsWith("/") ? item.page : `/${item.page}`;
+          }
+          const parts = pathname.split("/").filter(Boolean);
+          const propertyId = parts[1];
+          if (!propertyId) return; // skip if invalid
+          propertyUsersMap[propertyId] = (propertyUsersMap[propertyId] || 0) + (item.users || 0);
+        });
+
+        const propertyIds = Object.keys(propertyUsersMap);
+
+        // Safely map IDs to names and counts
+        const safePropertyNames = propertyIds.map((id) => {
+          const prop = allProperties.find((p) => p._id === id);
+          return prop?.name || id; // fallback to id if name missing
+        });
+        const safeUsersCount = propertyIds.map((id) => propertyUsersMap[id] || 0); // fallback 0
+
+        // Only set chart if arrays are valid
+        if (safePropertyNames.length === safeUsersCount.length && safePropertyNames.length > 0) {
+          setPropertyChartOptions({
+            chart: { id: "property-bar", toolbar: { show: true } },
+            xaxis: { categories: safePropertyNames },
+            tooltip: {
+              custom: ({ series, seriesIndex, dataPointIndex }) => {
+                const propertyId = propertyIds[dataPointIndex];
+                const prop = allProperties.find((p) => p._id === propertyId);
+                if (!prop) return `${propertyId}: ${series[seriesIndex][dataPointIndex]}`;
+                return `
+                  <div style="padding:5px">
+                    <b>${prop.title}</b><br/>
+                    Type: ${prop.propertyType || "-"}<br/>
+                    Location: ${prop.address.street || "-"},
+                     ${prop.address.city || "-"},
+                     ${prop.address.state || "-"}, 
+                     ${prop.address.zip || "-"}<br/>
+                    Price: ${prop.price || "-"}
+                  </div>
+                `;
+              },
+            },
+          });
+
+          setPropertyChartData([{ name: "Users per Property", data: safeUsersCount }]);
+        } else {
+          // fallback empty chart to prevent errors
+          setPropertyChartOptions({
+            chart: { id: "property-bar", toolbar: { show: true } },
+            xaxis: { categories: [] },
+          });
+          setPropertyChartData([{ name: "Users per Property", data: [] }]);
+        }
       } catch (err) {
-        console.error("Failed to fetch page analytics", err);
+        console.error("Failed to fetch property analytics", err);
+        // fallback empty chart on error
+        setPropertyChartOptions({
+          chart: { id: "property-bar", toolbar: { show: true } },
+          xaxis: { categories: [] },
+        });
+        setPropertyChartData([{ name: "Users per Property", data: [] }]);
       }
     };
-    fetchPageAnalytics();
-    // --- 2. UPDATED DEPENDENCIES ---
-  }, [user, dateRange, selectedUser]); // Depends on the single dateRange state
+
+    fetchPropertyAnalytics();
+  }, [user, dateRange, selectedUser, allProperties]);
 
   if (user?.role !== "admin") {
     return <p className="text-red-500 font-bold">Access denied. Admins only.</p>;
@@ -212,7 +343,7 @@ const AdminAnalytics = () => {
       <div className="p-6">
         <h2 className="text-2xl font-bold mb-4">Admin Analytics Dashboard</h2>
 
-        {/* --- 3. MOVED GLOBAL FILTERS TO THE TOP --- */}
+        {/* --- Global Filters --- */}
         <div className="mb-6 flex items-center gap-4 p-4 border rounded-lg bg-gray-50">
           <div>
             <label className="block mb-1 text-sm font-semibold">Filter by User:</label>
@@ -241,28 +372,32 @@ const AdminAnalytics = () => {
           </div>
         </div>
 
-        {/* --- Logins Chart --- */}
+        {/* --- Charts --- */}
         <div className="mb-10">
           <h3 className="text-xl font-semibold mb-2">Logins vs Failed Logins</h3>
-          {/* DatePicker removed from here */}
-          <ReactApexChart
-            options={loginChartOptions}
-            series={loginChartData}
-            type="bar"
-            height={350}
-          />
+          {loginChartData.length && loginChartOptions.xaxis.categories.length > 0 ? (
+            <ReactApexChart options={loginChartOptions} series={loginChartData} type="bar" height={350} />
+          ) : (
+            <p>No login data available</p>
+          )}
         </div>
 
-        {/* --- Page Views Chart --- */}
-        <div>
+        <div className="mb-10">
           <h3 className="text-xl font-semibold mb-2">Page Views per Page</h3>
-          {/* DatePicker removed from here */}
-          <ReactApexChart
-            options={pageChartOptions}
-            series={pageChartData}
-            type="bar"
-            height={350}
-          />
+          {pageChartData.length && pageChartOptions.xaxis.categories.length > 0 ? (
+            <ReactApexChart options={pageChartOptions} series={pageChartData} type="bar" height={350} />
+          ) : (
+            <p>No page data available</p>
+          )}
+        </div>
+
+        <div className="mt-10">
+          <h3 className="text-xl font-semibold mb-2">Property Pages Views</h3>
+          {propertyChartData.length && propertyChartOptions.xaxis.categories.length > 0 ? (
+            <ReactApexChart options={propertyChartOptions} series={propertyChartData} type="bar" height={350} />
+          ) : (
+            <p>No property data available</p>
+          )}
         </div>
       </div>
     </>

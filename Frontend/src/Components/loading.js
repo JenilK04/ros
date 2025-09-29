@@ -1,36 +1,17 @@
-import { Home, Building, MapPinHouseIcon, User, Warehouse } from "lucide-react";
-import { useState, useEffect } from "react";
+import React from 'react';
 
-const icons = [
-  { Icon: Home, color: "text-green-400" },
-  { Icon: Building, color: "text-blue-400" },
-  { Icon: MapPinHouseIcon, color: "text-red-400" },
-  { Icon: User, color: "text-purple-400" },
-  { Icon: Warehouse, color: "text-yellow-400" },
-];
-
-const Loading = () => {
-  const [index, setIndex] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIndex((prev) => (prev + 1) % icons.length);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const { Icon, color } = icons[index];
-
+const BouncingDots = () => {
   return (
-    <div className="flex flex-col items-center justify-center">
-      <div className={`animate-bounce ${color}`}>
-        <Icon size={64} />
+    <div className="flex flex-col items-center justify-center gap-4">
+      <div className="flex items-center justify-center space-x-2">
+        {/* We replace 'animate-pulse' with our new 'animate-bounce-slow' */}
+        <div className="h-3 w-3 rounded-full bg-blue-500 animate-bounce-slow"></div>
+        <div className="h-3 w-3 rounded-full bg-blue-500 animate-bounce-slow [animation-delay:-0.15s]"></div>
+        <div className="h-3 w-3 rounded-full bg-blue-500 animate-bounce-slow [animation-delay:-0.3s]"></div>
       </div>
-      <p className="mt-4 text-lg font-semibold text-white animate-pulse">
-        Finding your perfect property...
-      </p>
+       <p className="text-slate-600">Please wait</p>
     </div>
   );
 };
 
-export default Loading;
+export default BouncingDots;

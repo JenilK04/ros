@@ -11,7 +11,8 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.17.0",
     "node-fetch": "^3.3.2",
-    "react-apexcharts": "^1.7.0"
+    "react-apexcharts": "^1.7.0",
+    "socket.io": "^4.8.1"
   },
   "scripts": {
     "start": "nodemon server.js"

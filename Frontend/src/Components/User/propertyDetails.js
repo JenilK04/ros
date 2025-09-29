@@ -15,7 +15,7 @@ import { useUser } from '../../Context/userContext';
 const PropertyDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useUser();
+  const { user, refreshUser } = useUser();
 
   const [property, setProperty] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -61,27 +61,31 @@ const PropertyDetails = () => {
   }, [id, user?._id]);
 
   const handleInquiryToggle = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!inquired) {
-        const response = await API.post(`/properties/${id}/inquiry`, {}, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setProperty(response.data.property || property);
-        setInquired(true);
-      } else {
-        const response = await API.delete(`/properties/${id}/inquiry`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setProperty(response.data.property || property);
-        setInquired(false);
-      }
-    } catch (err) {
-      console.error("Inquiry action failed:", err);
-      alert(err.response?.data?.msg || "Failed to update inquiry.");
-    }
-  };
+        try {
+            const token = localStorage.getItem('token');
+            if (!inquired) {
+                await API.post(`/properties/${id}/inquiry`, {}, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                setInquired(true);
+            } else {
+                await API.delete(`/properties/${id}/inquiry`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                setInquired(false);
+            }
 
+            // ✨ 2. Call refreshUser after the API request succeeds
+            // This is the crucial change that updates the global user state.
+            if (refreshUser) {
+                await refreshUser();
+            }
+
+        } catch (err) {
+            console.error("Inquiry action failed:", err);
+            alert(err.response?.data?.msg || "Failed to update inquiry.");
+        }
+    };
   const handleUpdateProperty = async (propertyId, updatedPropertyData) => {
     try {
       const token = localStorage.getItem('token');
