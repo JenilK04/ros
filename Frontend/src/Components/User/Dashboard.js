@@ -1,5 +1,5 @@
-import React from 'react';
 import Navbar from './navbar';
+import ActivityOverview from './activityOverviewCard';
 import { useUser } from '../../Context/userContext';
 import {Users, ClipboardCheck, Calendar, MessageCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -39,7 +39,9 @@ const Dashboard = () => {
           <div className="bg-white p-5 rounded-xl shadow">
             <h2 className="text-lg font-semibold text-gray-700 mb-2">Activity Overview</h2>
             <p className="text-gray-500 text-sm">Graph/Stats will be displayed here.</p>
+            <div className="mt-4"> <ActivityOverview />
           </div>
+        </div>
 
           <div className="bg-white p-5 rounded-xl shadow">
             <h2 className="text-lg font-semibold text-gray-700 mb-2">Upcoming Tasks</h2>

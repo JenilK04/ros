@@ -32,7 +32,7 @@ app.get('/', (req, res) => res.send('API Running'));
 app.use('/api/auth', authRoutes);
 app.use('/api/properties', propertiesRoute);
 app.use('/api/admin',adminroutes);
-app.use('/api/admin/analytics', postHogRoutes);
+app.use('/api/analytics', postHogRoutes);
 app.use('/api', eventRoutes);
 
 const PORT = process.env.PORT || 5000;

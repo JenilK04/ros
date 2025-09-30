@@ -170,7 +170,7 @@ const AdminAnalytics = () => {
         };
         if (selectedUser !== "all") params.userId = selectedUser;
 
-        const res = await API.get("/admin/analytics", { params });
+        const res = await API.get("/analytics", { params });
         const loginData = res.data || [];
 
         const categories = loginData.map((item) => item.date || "Unknown");
@@ -203,7 +203,7 @@ const AdminAnalytics = () => {
         };
         if (selectedUser !== "all") params.userId = selectedUser;
 
-        const res = await API.get("/admin/analytics/pageviews", { params });
+        const res = await API.get("/analytics/pageviews", { params });
         const pageData = res.data || [];
 
         const filteredPages = pageData.filter((item) => {
@@ -247,7 +247,7 @@ const AdminAnalytics = () => {
         };
         if (selectedUser !== "all") params.userId = selectedUser;
 
-        const pageRes = await API.get("/admin/analytics/pageviews", { params });
+        const pageRes = await API.get("/analytics/pageviews", { params });
         const pageData = pageRes.data || [];
 
         // Filter only property pages

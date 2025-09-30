@@ -12,6 +12,7 @@ const Navbar = () => {
     logoutUser();
     navigate("/");
     setMenuOpen(false);
+   
   };
 
   // Common class for NavLink

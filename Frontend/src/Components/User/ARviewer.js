@@ -18,8 +18,7 @@ const ARViewer = ({ propertyId }) => {
         const res = await API.get(`/properties/${propertyId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        // Property may already have a direct AR model (optional)
-        if (res.data?.arModel) setArModelLink(res.data.arModel);
+        if (res.data?.arModel?.length) setArModelLink(res.data.arModel[0]);
       } catch (err) {
         console.error("Error fetching property:", err);
       } finally {
@@ -44,8 +43,7 @@ const ARViewer = ({ propertyId }) => {
 
         if (stat === "success") {
           clearInterval(intervalRef.current);
-          // Fetch fresh AR model link
-          handleViewLink();
+          fetchLatestLink();
           setLoading(false);
         } else if (stat === "failed") {
           clearInterval(intervalRef.current);
@@ -81,21 +79,19 @@ const ARViewer = ({ propertyId }) => {
     }
   };
 
-  // Fetch AR download link
-  const handleViewLink = async () => {
+  // Fetch latest AR download link (refresh every time popup opens)
+  const fetchLatestLink = async () => {
     try {
-      if (!arModelLink) {
-        setLoading(true);
-        const token = localStorage.getItem("token");
-        const res = await API.get(`/properties/${propertyId}/download-ar`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setArModelLink(res.data.arModel);
-      }
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const res = await API.get(`/properties/${propertyId}/download-ar`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.data?.arModel) setArModelLink(res.data.arModel);
       setShowPopup(true);
     } catch (err) {
       console.error("Error fetching AR model link:", err);
-      alert("⚠️ AR model not ready yet. Please wait for generation to complete.");
+      alert("⚠️ AR model not ready yet.");
     } finally {
       setLoading(false);
     }
@@ -127,13 +123,10 @@ const ARViewer = ({ propertyId }) => {
 
         {/* View/Get Link Button */}
         <button
-          onClick={handleViewLink}
-          disabled={!arModelLink && status !== "success"}
-          title={!arModelLink && status !== "success" ? "Generate AR first" : ""}
+          onClick={fetchLatestLink}
+          disabled={loading}
           className={`px-4 py-2 rounded-md ${
-            arModelLink || status === "success"
-              ? "bg-blue-600 text-white hover:bg-blue-700"
-              : "bg-gray-400 cursor-not-allowed"
+            arModelLink ? "bg-blue-600 text-white hover:bg-blue-700" : "bg-gray-400 cursor-not-allowed"
           }`}
         >
           View AR Link
@@ -141,7 +134,7 @@ const ARViewer = ({ propertyId }) => {
       </div>
 
       {/* Progress Bar */}
-      {loading && (
+      {loading && status === "running" && (
         <div className="w-full max-w-md mb-4">
           <div className="bg-gray-200 rounded-full h-4 mb-2">
             <div
@@ -174,7 +167,6 @@ const ARViewer = ({ propertyId }) => {
               </button>
               <a
                 href={arModelLink}
-                download
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"

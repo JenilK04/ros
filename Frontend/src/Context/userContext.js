@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import API from '../services/api';
+import posthog from 'posthog-js'; // <-- import PostHog
 
 const UserContext = createContext();
 
@@ -38,27 +39,47 @@ export const UserProvider = ({ children }) => {
 
   // Called after successful login
   const loginUser = async (userData, token) => {
-    try {
-      const response = await API.get('auth/user/me', {
-        headers: { Authorization: `Bearer ${token}` },
+  try {
+    const response = await API.get('auth/user/me', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    setUser(response.data);
+    localStorage.setItem("user", JSON.stringify(response.data));
+    localStorage.setItem("role", response.data.role);
+
+    // 🔑 Identify user in PostHog
+    posthog.identify(response.data._id, {
+      email: response.data.email,
+      name: response.data.firstName,
+      role: response.data.role,
+    });
+
+  } catch (error) {
+    console.error("Failed to fetch full user after login", error);
+    setUser(userData);
+    localStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem("role", userData.role || "user");
+
+    // 🔑 Identify fallback user in PostHog
+    if (userData._id) {
+      posthog.identify(userData._id, {
+        email: userData.email,
+        name: userData.firstName,
+        role: userData.role,
       });
-      setUser(response.data);
-      localStorage.setItem("user", JSON.stringify(response.data));
-      localStorage.setItem("role", response.data.role);
-    } catch (error) {
-      console.error("Failed to fetch full user after login", error);
-      setUser(userData);
-      localStorage.setItem("user", JSON.stringify(userData));
-      localStorage.setItem("role", userData.role || "user");
     }
-    localStorage.setItem("token", token);
-  };
+  }
+
+  localStorage.setItem("token", token);
+};
+
 
   const logoutUser = () => {
     setUser(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     localStorage.removeItem('role');
+    posthog.reset();
   };
 
   // ✅ Add updateUser function

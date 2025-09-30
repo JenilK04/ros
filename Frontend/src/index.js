@@ -14,6 +14,7 @@ root.render(
       apiKey={process.env.REACT_APP_POSTHOG_KEY}
       options={{
         api_host: process.env.REACT_APP_POSTHOG_HOST,
+        autocapture: true,
         defaults: '2025-05-24',
         capture_exceptions: true, // This enables capturing exceptions using Error Tracking, set to false if you don't want this
         debug: process.env.NODE_ENV === "development",

@@ -4,6 +4,8 @@ import API from '../../services/api';
 import AddPropertyModal from './addProperty';
 import ARViewer from './ARviewer';
 import ARModelViewer from './ArModelViewer';
+import posthog from 'posthog-js';
+
 import {
   MapPin, IndianRupeeIcon, Bed, Bath, Ruler,
   Building, Home, LandPlot, Trash2,
@@ -59,6 +61,16 @@ const PropertyDetails = () => {
     if (id) fetchPropertyDetails();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, user?._id]);
+
+useEffect(() => {
+    if (id) {
+      posthog.capture("property_view", {
+        propertyId: id,
+        $current_url: window.location.pathname,
+      });
+    }
+  }, [id]);
+
 
   const handleInquiryToggle = async () => {
         try {

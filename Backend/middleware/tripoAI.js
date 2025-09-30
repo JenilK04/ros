@@ -3,10 +3,9 @@ import fs from "fs";
 import path from "path";
 import axios from "axios";
 import FormData from "form-data";
-import Property from "../models/Property.js"; // Note the .js extension in ESM
-import dotenv from 'dotenv';
+import Property from "../models/Property.js"; 
+import dotenv from "dotenv";
 dotenv.config();
-
 
 const TRIPO_API_KEY = process.env.TRIPO_API_KEY;
 const tempDir = path.join(path.resolve(), "temp");
@@ -24,33 +23,30 @@ export async function uploadBase64ToTripo(base64Image, fileName = "temp.jpg") {
     const form = new FormData();
     form.append("file", fs.createReadStream(tempPath));
 
+    const headers = {
+      Authorization: `Bearer ${TRIPO_API_KEY}`,
+      ...form.getHeaders(),
+    };
+
     const res = await axios.post(
       "https://api.tripo3d.ai/v2/openapi/upload/sts",
       form,
-      {
-        headers: {
-          Authorization: `Bearer ${TRIPO_API_KEY}`,
-          ...form.getHeaders(),
-        },
-      }
+      { headers }
     );
 
     fs.unlinkSync(tempPath);
-
-    console.log("Tripo upload response:", res.data);
 
     const imageToken = res.data?.data?.image_token || res.data?.image_token;
     if (!imageToken) throw new Error("Upload failed: image_token not returned");
 
     return imageToken;
   } catch (err) {
-    console.error("Error uploading image to Tripo:", err.message);
+    console.error("❌ Upload error:", err.response?.data || err.message);
     throw err;
   }
 }
 
-// Generate AR model for a property with proper status handling
-// Generate AR model for a property with proper status handling
+// Generate AR model for a property
 export async function generateARFromProperty(propertyId, onProgress = null) {
   try {
     const property = await Property.findById(propertyId);
@@ -58,7 +54,7 @@ export async function generateARFromProperty(propertyId, onProgress = null) {
       throw new Error("Property or images not found");
     }
 
-    // Upload all images
+    // Upload images to Tripo
     const imageTokens = [];
     for (let i = 0; i < property.images.length; i++) {
       const token = await uploadBase64ToTripo(
@@ -91,9 +87,11 @@ export async function generateARFromProperty(propertyId, onProgress = null) {
     const taskId = taskResp.data?.data?.task_id;
     if (!taskId) throw new Error("Failed to create Tripo task");
 
-    // Poll for task completion
-    const maxRetries = 120; // up to 10 minutes
-    const waitTime = 5000; // 5 seconds
+    console.log(`🆔 Task created for property ${propertyId}: ${taskId}`);
+
+    // Poll for completion
+    const maxRetries = 120;
+    const waitTime = 5000;
 
     for (let i = 0; i < maxRetries; i++) {
       const statusRes = await axios.get(
@@ -105,12 +103,25 @@ export async function generateARFromProperty(propertyId, onProgress = null) {
       if (!statusData) throw new Error("Invalid Tripo status response");
 
       if (statusData.status === "success") {
-        // ✅ Save only taskId in property (not expiring model link)
+        // Only save links that exist
+        let selectedLink =
+          statusData.output?.pbr_model ||
+          statusData.output?.model ||
+          statusData.output?.base_model ||
+          statusData.output?.rendered_image ||
+          null;
+
+        if (!selectedLink) {
+          throw new Error("No valid model link found in Tripo output");
+        }
+
+        // Save only ONE string in arModel
         property.arTaskId = taskId;
+        property.arModel = [selectedLink]; // still an array but with 1 string
         await property.save();
 
-        console.log("3D task saved for property:", property._id);
-        return taskId;
+        console.log(`✅ AR model generated & saved for property ${propertyId}`);
+        return selectedLink;
       } else if (
         ["failed", "banned", "expired", "cancelled", "unknown"].includes(
           statusData.status
@@ -119,7 +130,6 @@ export async function generateARFromProperty(propertyId, onProgress = null) {
         throw new Error(`3D model generation failed: ${statusData.status}`);
       } else if (["queued", "running"].includes(statusData.status)) {
         const progress = statusData.progress || 0;
-        console.log(`AR task in progress: ${progress}%`);
         if (onProgress && typeof onProgress === "function") onProgress(progress);
         await new Promise((r) => setTimeout(r, waitTime));
       }
@@ -127,8 +137,7 @@ export async function generateARFromProperty(propertyId, onProgress = null) {
 
     throw new Error("3D model generation timed out");
   } catch (err) {
-    console.error("Error generating AR for property:", err.message);
+    console.error("❌ AR generation error:", err.response?.data || err.message);
     throw err;
   }
 }
-
