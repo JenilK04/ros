@@ -5,12 +5,12 @@ import AddPropertyModal from './addProperty';
 import ARViewer from './ARviewer';
 import ARModelViewer from './ArModelViewer';
 import posthog from 'posthog-js';
-
+import ChatPopup from './chatPopup';
 import {
   MapPin, IndianRupeeIcon, Bed, Bath, Ruler,
   Building, Home, LandPlot, Trash2,
   ArrowLeft, ArrowRight, User, Phone,
-  Mail
+  Mail,MessageCircle
 } from 'lucide-react';
 import { useUser } from '../../Context/userContext';
 
@@ -26,6 +26,7 @@ const PropertyDetails = () => {
   const [inquired, setInquired] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showARViewer, setShowARViewer] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
 
   // Fullscreen Gallery
@@ -429,6 +430,25 @@ useEffect(() => {
             )}
           </div>
         </div>
+      )}
+      {/* Floating Chat Button */}
+      {!isOwner && !isAdmin && (
+        <button
+          onClick={() => setIsChatOpen(true)}
+          className="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg transition transform hover:scale-110 z-50"
+          title="Chat with Seller"
+        >
+          <MessageCircle className="h-6 w-6" />
+        </button>
+      )}
+
+      {isChatOpen && (
+      <ChatPopup
+        property={property}
+        sellerId={property.userId}
+        buyerId={user._id}
+        onClose={() => setIsChatOpen(false)}
+      />
       )}
     </div>
   );

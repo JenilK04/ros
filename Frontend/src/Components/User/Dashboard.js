@@ -30,6 +30,7 @@ const Dashboard = () => {
           <Card
               title="My Leads"
               icon={<Users className="h-8 w-8" />}
+              onClick={() => navigate('/myleads')}
               color="linear-gradient(135deg, #22D3EE 0%, #3B82F6 100%)" // cyan → blue
             />
             <Card

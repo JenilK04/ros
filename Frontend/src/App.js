@@ -17,6 +17,7 @@ const ManageUsersPage = lazy(() => import("./Components/Admin/manageUsers-A"));
 const UserDetails = lazy(() => import("./Components/Admin/userDetails"));
 const Event = lazy(() => import("./Components/User/Event"));
 const Analytics = lazy(() => import("./Components/Admin/anaylitcs"));
+const MyLeads = lazy(() => import("./Components/User/myLeads"));
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
               <Route path="/properties" element={<ProtectedUser><Properties /></ProtectedUser>} />
               <Route path="/properties/:id" element={<ProtectedUser><PropertyDetails /></ProtectedUser>} />
               <Route path="/events" element={<ProtectedUser><Event /></ProtectedUser>} />
+              <Route path="/myleads" element={<ProtectedUser><MyLeads /></ProtectedUser>} />
 
               {/* Protected Routes for Admins Only */}
               <Route
