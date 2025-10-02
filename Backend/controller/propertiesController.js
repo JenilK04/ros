@@ -1,6 +1,8 @@
 // backend/controller/propertiesController.js
 import Property from "../models/Property.js";
 import mongoose from "mongoose";
+import Notification from "../models/notification.js";
+import User from "../models/Users.js";
 import {generateARFromProperty} from "../middleware/tripoAI.js";
 
 // ✅ Get property by ID
@@ -158,19 +160,39 @@ const addInquiry = async (req, res) => {
     const property = await Property.findById(req.params.id);
     if (!property) return res.status(404).json({ msg: "Property not found" });
 
+    // Prevent duplicate inquiry
     if (property.inquiredBy.includes(req.user.id)) {
       return res.status(400).json({ msg: "Already inquired" });
     }
 
+    // Add buyer to inquiredBy
     property.inquiredBy.push(req.user.id);
     await property.save();
 
-    res.json({ msg: "Inquiry added successfully", property });
+    // Send notification to seller
+    const buyer = await User.findById(req.user.id);
+    const message = `${buyer.firstName + " " + buyer.lastName} added your property "${property.title}" to inquiry.`;
+
+    const notification = await Notification.create({
+      recipientId: property.userId,  // seller
+      senderId: req.user.id,
+      propertyId: property._id,
+      message
+    });
+
+    // Real-time push via Socket.IO
+    if (req.io) {
+      req.io.to(property.userId.toString()).emit("new-notification", notification);
+    }
+
+    res.json({ msg: "Inquiry added & seller notified", property });
+
   } catch (error) {
     console.error("Error adding inquiry:", error);
     res.status(500).json({ msg: "Server error", error: error.message });
   }
 };
+
 
 // ✅ Remove inquiry
 const removeInquiry = async (req, res) => {

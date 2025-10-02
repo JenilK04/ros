@@ -187,9 +187,19 @@ useEffect(() => {
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gray-300 text-gray-600">
+            <div className="w-full h-full flex items-center justify-center bg-gray-300 text-gray-600 ">
               No Image Available
             </div>
+          )}
+          {/* Posted Date Badge */}
+          {property.createdAt && (
+            <span className="absolute top-2 right-2 bg-white bg-opacity-70 text-grey-900 text-xs px-2 py-1 rounded">
+              {new Date(property.createdAt).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+              })}
+            </span>
           )}
           {property.images?.length > 1 && (
             <>
@@ -227,6 +237,7 @@ useEffect(() => {
               <ARViewer propertyId={property._id} />
             </div>
           )}
+          <h6 className='text-red-500 text-sm'>*first check the view AR link if its working then no need to genertae new AR Model </h6>
           <div className="flex flex-col sm:flex-row gap-2 mb-4">
             <button
               onClick={() => setShowARViewer(true)}

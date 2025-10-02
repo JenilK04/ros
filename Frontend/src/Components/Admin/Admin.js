@@ -1,12 +1,12 @@
 import React from 'react';
 import Navbar from '../User/navbar';
-import {  BarChart2, UserCog, Calendar } from 'lucide-react';
+import { BarChart2, UserCog, Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Admin = () => {
-    
   const adminName = 'Admin';
-const navigate = useNavigate()
+  const navigate = useNavigate();
+
   return (
     <>
       <Navbar />
@@ -18,10 +18,26 @@ const navigate = useNavigate()
           <p className="text-gray-500">Manage system settings, users, and reports.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6" >
-          <Card title="Manage Users" icon={<UserCog className="h-8 w-8 text-blue-600"/>} onClick={() => navigate('/manageusers')} />
-          <Card title="Reports & Analytics" icon={<BarChart2 className="h-8 w-8 text-green-600" />} onClick={() => navigate('/analytics')} />
-          <Card title="Events" icon={<Calendar className="h-8 w-8 text-pink-600" />}  onClick={() => navigate('/events')}/>
+        {/* Cards with gradient colors */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <Card
+            title="Manage Users"
+            icon={<UserCog className="h-8 w-8 text-white" />}
+            onClick={() => navigate('/manageusers')}
+            gradient="from-blue-500 to-indigo-600"
+          />
+          <Card
+            title="Reports & Analytics"
+            icon={<BarChart2 className="h-8 w-8 text-white" />}
+            onClick={() => navigate('/analytics')}
+            gradient="from-green-400 to-emerald-600"
+          />
+          <Card
+            title="Events"
+            icon={<Calendar className="h-8 w-8 text-white" />}
+            onClick={() => navigate('/events')}
+            gradient="from-orange-400 to-pink-500"
+          />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -40,13 +56,21 @@ const navigate = useNavigate()
   );
 };
 
-const Card = ({ title, icon, onClick }) => (
-  <div className="bg-white p-4 rounded-xl shadow hover:shadow-lg transition cursor-pointer transform hover:scale-105" onClick={onClick}>
-    <div className="flex items-center space-x-4 mb-2">
+const Card = ({ title, icon, onClick, gradient }) => (
+  <div
+    className={`relative overflow-hidden p-4 rounded-xl shadow-lg cursor-pointer transform hover:scale-105 transition-all duration-300 bg-gradient-to-r ${gradient}`}
+    onClick={onClick}
+  >
+    {/* Shimmer effect */}
+    <div className="absolute inset-0 bg-gradient-to-r from-white/10 via-transparent to-white/10 animate-pulse"></div>
+
+    <div className="relative z-10 flex items-center space-x-4 mb-2">
       {icon}
-      <h2 className="text-lg font-semibold text-gray-700">{title}</h2>
+      <h2 className="text-lg font-semibold text-white">{title}</h2>
     </div>
-    <p className="text-gray-500 text-sm">Control and manage {title.toLowerCase()} here.</p>
+    <p className="relative z-10 text-white/90 text-sm">
+      Control and manage {title.toLowerCase()} here.
+    </p>
   </div>
 );
 
