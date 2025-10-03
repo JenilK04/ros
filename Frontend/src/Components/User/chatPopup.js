@@ -1,21 +1,18 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import API from "../../services/api";
-import { io } from "socket.io-client";
 
-const ChatPopup = ({ property, sellerId, buyerId, onClose }) => {
+const ChatPopup = ({ property, buyerId, sellerId, onClose, socket }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const messagesEndRef = useRef(null);
 
-  // Create socket instance
-  const socketRef = useRef(null);
-  const room = [buyerId, sellerId].sort().join("-"); // unique room for this chat
+  const room = [buyerId, sellerId].sort().join("-");
 
   const scrollToBottom = () =>
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
 
-  // Fetch initial chat messages
+  // Fetch chat history
   useEffect(() => {
     const fetchMessages = async () => {
       try {
@@ -32,19 +29,20 @@ const ChatPopup = ({ property, sellerId, buyerId, onClose }) => {
     fetchMessages();
   }, [property._id]);
 
-  // Connect to socket and join room
+  // Socket listener
   useEffect(() => {
-    socketRef.current = io("http://localhost:5000"); // replace with your server
-    socketRef.current.emit("joinRoom", room);
+    if (!socket) return;
 
-    socketRef.current.on("receiveMessage", (msg) => {
-      setMessages((prev) => [...prev, msg]);
+    socket.emit("joinRoom", room);
+
+    socket.on("receiveMessage", (msg) => {
+      if (msg.propertyId === property._id) {
+        setMessages((prev) => [...prev, msg]);
+      }
     });
 
-    return () => {
-      socketRef.current.disconnect();
-    };
-  }, [room]);
+    return () => socket.off("receiveMessage");
+  }, [socket, property._id, room]);
 
   useEffect(scrollToBottom, [messages]);
 
@@ -57,17 +55,21 @@ const ChatPopup = ({ property, sellerId, buyerId, onClose }) => {
         { senderId: buyerId, text: input },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setMessages((prev) => [...prev, res.data]);
-      setInput("");
 
-      // Emit message through socket to update other side
-      socketRef.current.emit("sendMessage", res.data);
+      // Emit message to socket (both sender + receiver)
+      socket.emit("sendMessage", {
+        ...res.data,
+        propertyName: property.propertyName,
+      });
+
+      setInput("");
     } catch (err) {
       console.error("Failed to send message:", err);
     }
   };
 
   const formatTime = (timestamp) => {
+    if (!timestamp) return "";
     const date = new Date(timestamp);
     return `${date.toLocaleDateString()} ${date.toLocaleTimeString([], {
       hour: "2-digit",
@@ -77,32 +79,47 @@ const ChatPopup = ({ property, sellerId, buyerId, onClose }) => {
 
   return (
     <div className="fixed bottom-20 right-6 w-80 bg-white shadow-lg rounded-lg flex flex-col border z-50">
-      {/* Header */}
+      {/* Header: Seller + Property */}
       <div className="flex justify-between items-center p-2 bg-blue-600 text-white rounded-t-lg">
-        <span className="font-semibold text-sm">{property.contactName}</span>
-        <button onClick={onClose}><X className="h-4 w-4" /></button>
+        <div>
+          <div className="font-semibold">{property.contactName}</div>
+          <div className="text-xs italic">{property.propertyName}</div>
+        </div>
+        <button onClick={onClose}>
+          <X className="h-4 w-4" />
+        </button>
       </div>
 
       {/* Messages */}
       <div className="flex-1 p-2 overflow-y-auto max-h-64 space-y-2 text-sm">
-        {messages.length > 0 ? messages.map((msg, idx) => {
-          const isSender = msg.senderId === buyerId;
-          const senderName = isSender ? "You" : property.contactName;
-          return (
-            <div
-              key={idx}
-              className={`flex flex-col max-w-[75%] ${
-                isSender ? "self-end items-end" : "self-start items-start"
-              }`}
-            >
-              <div className={`p-2 rounded-md ${isSender ? "bg-blue-100" : "bg-gray-200"}`}>
-                <div className="font-semibold text-xs">{senderName}</div>
-                <div>{msg.text}</div>
+        {messages.length > 0 ? (
+          messages.map((msg, idx) => {
+            const isSender = msg.senderId === buyerId;
+            const senderName = isSender ? "You" : property.contactName;
+            return (
+              <div
+                key={idx}
+                className={`flex flex-col max-w-[75%] ${
+                  isSender ? "self-end items-end" : "self-start items-start"
+                }`}
+              >
+                <div
+                  className={`p-2 rounded-md ${
+                    isSender ? "bg-blue-100" : "bg-gray-200"
+                  }`}
+                >
+                  <div className="font-semibold text-xs">{senderName}</div>
+                  <div>{msg.text}</div>
+                </div>
+                <div className="text-gray-400 text-[10px] mt-0.5">
+                  {formatTime(msg.timestamp)}
+                </div>
               </div>
-              <div className="text-gray-400 text-[10px] mt-0.5">{formatTime(msg.timestamp)}</div>
-            </div>
-          );
-        }) : <div className="text-gray-400 text-xs">No messages yet</div>}
+            );
+          })
+        ) : (
+          <div className="text-gray-400 text-xs">No messages yet</div>
+        )}
         <div ref={messagesEndRef} />
       </div>
 
@@ -115,7 +132,12 @@ const ChatPopup = ({ property, sellerId, buyerId, onClose }) => {
           className="flex-grow p-1 text-sm outline-none"
           onKeyDown={(e) => e.key === "Enter" && sendMessage()}
         />
-        <button onClick={sendMessage} className="px-2 text-blue-600 font-semibold text-sm">Send</button>
+        <button
+          onClick={sendMessage}
+          className="px-2 text-blue-600 font-semibold text-sm"
+        >
+          Send
+        </button>
       </div>
     </div>
   );

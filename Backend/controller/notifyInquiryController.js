@@ -1,21 +1,21 @@
-// controllers/inquiryController.js
 import Notification from "../models/notification.js";
 import Message from "../models/message.js";
 import Property from "../models/Property.js";
 import User from "../models/Users.js";
 
-
+// GET /notifications
 export const getNotifications = async (req, res) => {
   try {
     const notifications = await Notification.find({
       recipientId: req.user.id
-    }).sort({ createdAt: -1 }); // latest first
+    }).sort({ createdAt: -1 });
     res.json(notifications);
   } catch (err) {
     res.status(500).json({ msg: "Server error", error: err.message });
   }
 };
 
+// GET /myleads/:userId
 export const getMyLeads = async (req, res) => {
   const { userId } = req.params;
 
@@ -29,16 +29,18 @@ export const getMyLeads = async (req, res) => {
     for (const msg of messages) {
       const otherUserId = msg.senderId === userId ? msg.receiverId : msg.senderId;
 
-      // Skip if otherUserId is same as logged-in user
+      // Skip if same user
       if (otherUserId === userId) continue;
 
       const propertyId = msg.propertyId.toString();
 
       if (!leads[otherUserId + propertyId]) {
         const otherUser = await User.findById(otherUserId);
+        const property = await Property.findById(propertyId);
         leads[otherUserId + propertyId] = {
           userId: otherUserId,
           name: otherUser?.firstName + " " + otherUser?.lastName || "Unknown",
+          property: property?.title || "Unknown Property",
           propertyId,
           lastMessage: msg.text,
           lastTime: msg.timestamp,
@@ -53,8 +55,6 @@ export const getMyLeads = async (req, res) => {
   }
 };
 
-
-
 // POST /chat/:propertyId
 export const privateChat = async (req, res) => {
   const { propertyId } = req.params;
@@ -64,7 +64,7 @@ export const privateChat = async (req, res) => {
     const property = await Property.findById(propertyId);
     if (!property) return res.status(404).json({ error: "Property not found" });
 
-    const receiverId = property.userId; // seller is the property owner
+    const receiverId = property.userId; // seller
 
     const msg = new Message({
       senderId,
@@ -76,10 +76,8 @@ export const privateChat = async (req, res) => {
 
     await msg.save();
 
-    // Emit to both sender and receiver rooms
-    // Room naming: "chat-propertyId-userId1-userId2" (sorted for uniqueness)
     const room = [senderId, receiverId].sort().join("-");
-    req.io?.to(room).emit("newMessage", msg);
+    req.io?.to(room).emit("receiveMessage", msg); // matches frontend
 
     res.json(msg);
   } catch (err) {
@@ -91,13 +89,9 @@ export const privateChat = async (req, res) => {
 // GET /chat/:propertyId
 export const getChatMessages = async (req, res) => {
   const { propertyId } = req.params;
-  const { userId } = req.query; // optional: current logged-in user for filtering
 
   try {
-    // Find all messages for this property
-    const messages = await Message.find({ propertyId })
-      .sort({ timestamp: 1 }); // oldest first
-
+    const messages = await Message.find({ propertyId }).sort({ timestamp: 1 });
     res.json({ messages });
   } catch (err) {
     console.error(err);
@@ -105,4 +99,17 @@ export const getChatMessages = async (req, res) => {
   }
 };
 
-
+// DELETE /chat/:propertyId/:userId
+export const deleteLead = async (req, res) => {
+  const { propertyId, userId } = req.params;
+  try {
+    await Message.deleteMany({
+      propertyId,
+      $or: [{ senderId: userId }, { receiverId: userId }],
+    });
+    res.status(200).json({ message: "Lead deleted successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to delete lead" });
+  }
+};
