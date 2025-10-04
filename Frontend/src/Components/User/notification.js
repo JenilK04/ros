@@ -28,12 +28,20 @@ const Notifications = ({ userId }) => {
 
     socket.emit("register", userId); // join seller room
 
-    socket.on("new-notification", (notif) => {
+    socket.on("add-notification","remove-", (notif) => {
       setNotifications((prev) => [notif, ...prev]);
       setNewCount((prev) => prev + 1);
     });
 
-    return () => socket.off("new-notification");
+    socket.on("remove-notification", (notif) => {
+      setNotifications((prev) => prev.filter((n) => n._id !== notif._id));
+      setNewCount((prev) => prev - 1);
+    });
+
+    return () => {
+      socket.off("add-notification");
+      socket.off("remove-notification");
+    };
   }, [userId]);
 
   return (

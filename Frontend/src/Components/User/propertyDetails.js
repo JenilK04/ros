@@ -238,7 +238,6 @@ useEffect(() => {
               <ARViewer propertyId={property._id} />
             </div>
           )}
-          <h6 className='text-red-500 text-sm'>*first check the view AR link if its working then no need to genertae new AR Model </h6>
           <div className="flex flex-col sm:flex-row gap-2 mb-4">
             <button
               onClick={() => setShowARViewer(true)}
@@ -448,6 +447,7 @@ useEffect(() => {
         sellerId={property.userId}
         buyerId={user._id}
         onClose={() => setIsChatOpen(false)}
+        note="You can also see chat in Dashboard -> MyLeads"
       />
       )}
     </div>

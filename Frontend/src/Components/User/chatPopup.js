@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import API from "../../services/api";
 
-const ChatPopup = ({ property, buyerId, sellerId, onClose, socket }) => {
+const ChatPopup = ({ property, buyerId, sellerId, onClose, socket, note }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const messagesEndRef = useRef(null);
@@ -79,6 +79,11 @@ const ChatPopup = ({ property, buyerId, sellerId, onClose, socket }) => {
 
   return (
     <div className="fixed bottom-20 right-6 w-80 bg-white shadow-lg rounded-lg flex flex-col border z-50">
+      {note && (
+        <div className="bg-yellow-100 text-yellow-800 text-xs p-2 border-b">
+          Note: {note}
+        </div>
+      )}
       {/* Header: Seller + Property */}
       <div className="flex justify-between items-center p-2 bg-blue-600 text-white rounded-t-lg">
         <div>

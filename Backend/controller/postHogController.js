@@ -138,3 +138,34 @@ export const getPropertyViewStats = async (req, res) => {
     res.status(500).json({ msg: 'Failed to fetch property stats' });
   }
 };
+
+export const userActivity = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const response = await axios.get(
+      `https://app.posthog.com/api/projects/225220/events/`,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.POSTHOG_API_KEY}`,
+        },
+        params: {
+          distinct_id: userId,
+          limit: 100,
+        },
+      }
+    );
+
+    const pageViews = (response.data.results || []).filter(
+      (event) => event.event === '$pageview'
+    );
+
+    res.json(pageViews);
+  } catch (err) {
+    console.error(
+      "Error fetching user page activity from PostHog:",
+      err.response?.data || err.message
+    );
+    res.status(500).json({ error: "Failed to fetch user page activity" });
+  }
+};

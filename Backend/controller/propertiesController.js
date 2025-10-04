@@ -182,7 +182,7 @@ const addInquiry = async (req, res) => {
 
     // Real-time push via Socket.IO
     if (req.io) {
-      req.io.to(property.userId.toString()).emit("new-notification", notification);
+      req.io.to(property.userId.toString()).emit("add-notification", notification);
     }
 
     res.json({ msg: "Inquiry added & seller notified", property });
@@ -203,6 +203,21 @@ const removeInquiry = async (req, res) => {
     const userId = req.user.id;
     property.inquiredBy = property.inquiredBy.filter(id => id.toString() !== userId);
     await property.save();
+
+     const buyer = await User.findById(req.user.id);
+    const message = `${buyer.firstName + " " + buyer.lastName} removed your property "${property.title}" from inquiry.`;
+
+    const notification = await Notification.create({
+      recipientId: property.userId,  // seller
+      senderId: req.user.id,
+      propertyId: property._id,
+      message
+    });
+
+    // Real-time push via Socket.IO
+    if (req.io) {
+      req.io.to(property.userId.toString()).emit("remove-notification", notification);
+    }
 
     res.json({ msg: 'Inquiry removed', property });
   } catch (err) {

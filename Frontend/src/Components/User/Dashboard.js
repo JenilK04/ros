@@ -3,7 +3,7 @@ import Navbar from './navbar';
 import ActivityOverview from './activityOverviewCard';
 import { useUser } from '../../Context/userContext';
 import Notifications from './notification';
-import { Users, ClipboardCheck, Calendar, MessageCircle } from 'lucide-react';
+import { Users, ClipboardCheck, Calendar, NewspaperIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
@@ -45,8 +45,9 @@ const Dashboard = () => {
               onClick={() => navigate('/events')}
             />
             <Card
-              title="Pulse Feedback"
-              icon={<MessageCircle className="h-8 w-8" />}
+              onClick={() => navigate('/news')}
+              title="Housing Market News"
+              icon={<NewspaperIcon className="h-8 w-8" />}
               color="linear-gradient(135deg, #34D399 0%, #10B981 100%)" // light green → green
             />
         </div>
@@ -59,11 +60,11 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="bg-white p-5 rounded-xl shadow">
+          <div className="bg-white p-5 rounded-xl shadow max-h-60">
             <h2 className="text-lg font-semibold text-gray-700 mb-2 sticky top-0 z-10">
               Notifications
             </h2>
-            <div className="mt-2 bg-white max-h-40 overflow-y-auto">
+            <div className="mt-2 bg-white overflow-y-auto">
               <Notifications userId={user._id} />
             </div>
           </div>
@@ -90,7 +91,7 @@ const Card = ({ title, icon, onClick, color }) => (
       <h2 className="text-lg font-semibold">{title}</h2>
     </div>
     <p className="text-white text-sm relative z-10">
-      Manage your {title.toLowerCase()} here.
+      See/Manage your {title.toLowerCase()} here.
     </p>
   </div>
 );

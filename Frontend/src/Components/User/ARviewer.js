@@ -110,6 +110,7 @@ const ARViewer = ({ propertyId }) => {
       <div className="flex gap-2 mb-4">
         {/* Generate Button */}
         <button
+          title="*first check the view AR link if its working then no need to genertae new AR Model"
           onClick={generateAR}
           disabled={loading || !propertyFetched}
           className={`px-4 py-2 rounded-md ${

@@ -10,6 +10,7 @@ import propertiesRoute from './routes/propertiesRoute.js';
 import adminroutes from './routes/adminroutes.js';
 import eventRoutes from './routes/eventRoutes.js';
 import postHogRoutes from './routes/postHogRoutes.js';
+import newsRoutes from "./routes/newsRoutes.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import notificationRoute from './routes/notificationRoute.js';
@@ -39,6 +40,7 @@ app.use('/api/admin', adminroutes);
 app.use('/api/analytics', postHogRoutes);
 app.use('/api', eventRoutes);
 app.use('/api',notificationRoute)
+app.use("/api/news", newsRoutes);
 // ✅ Create HTTP server & attach Socket.IO
 const server = createServer(app);
 const io = new Server(server, {
