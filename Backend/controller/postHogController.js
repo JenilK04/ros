@@ -141,8 +141,14 @@ export const getPropertyViewStats = async (req, res) => {
 
 export const userActivity = async (req, res) => {
   const { userId } = req.params;
+  const { date } = req.query; // optional date parameter from frontend
 
   try {
+    // Use provided date or default to today
+    const filterDate = date ? new Date(date) : new Date();
+    const startOfDay = new Date(filterDate.setHours(0, 0, 0, 0)).toISOString();
+    const endOfDay = new Date(filterDate.setHours(23, 59, 59, 999)).toISOString();
+
     const response = await axios.get(
       `https://app.posthog.com/api/projects/225220/events/`,
       {
@@ -152,10 +158,13 @@ export const userActivity = async (req, res) => {
         params: {
           distinct_id: userId,
           limit: 100,
+          after: startOfDay,
+          before: endOfDay,
         },
       }
     );
 
+    // Filter only page views
     const pageViews = (response.data.results || []).filter(
       (event) => event.event === '$pageview'
     );
