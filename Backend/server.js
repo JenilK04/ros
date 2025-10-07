@@ -11,6 +11,7 @@ import adminroutes from './routes/adminroutes.js';
 import eventRoutes from './routes/eventRoutes.js';
 import postHogRoutes from './routes/postHogRoutes.js';
 import newsRoutes from "./routes/newsRoutes.js";
+import projectsRoute from "./routes/projectsRoute.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import notificationRoute from './routes/notificationRoute.js';
@@ -41,6 +42,7 @@ app.use('/api/analytics', postHogRoutes);
 app.use('/api', eventRoutes);
 app.use('/api',notificationRoute)
 app.use("/api/news", newsRoutes);
+app.use("/api/projects",projectsRoute)
 // ✅ Create HTTP server & attach Socket.IO
 const server = createServer(app);
 const io = new Server(server, {

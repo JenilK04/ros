@@ -57,6 +57,7 @@ const Profile = () => {
         companyName: user.companyName || '',
         licenseNumber: user.licenseNumber || '',
         experience: user.experience || '',
+        companyEmail: user.companyEmail || '',
         specialization: user.specialization || [],
         photo: user.photo || null,
       });
@@ -227,6 +228,7 @@ const Profile = () => {
               <Section title="Professional Info" icon={<BriefcaseBusiness className="text-purple-600 h-5 w-5" />} isEditing={isEditing}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Input label="Company" name="companyName" value={formData.companyName} onChange={handleInputChange} isEditing={isEditing} />
+                  <Input label="Company Email" name="companyEmail" value={formData.companyEmail} onChange={handleInputChange} isEditing={isEditing} />
                   <Input label="License" name="licenseNumber" value={formData.licenseNumber} onChange={handleInputChange} isEditing={isEditing} />
                   <div>
                     <label className="block text-sm font-medium text-gray-600 mb-1">Experience</label>

@@ -48,6 +48,10 @@ const Navbar = () => {
             Properties
           </NavLink>
 
+          <NavLink to="/projects" className={linkClass}>
+            Projects
+          </NavLink>
+
           {user?.role === "user" && (
             <NavLink to="/profile" className={linkClass}>
               Profile
@@ -89,6 +93,10 @@ const Navbar = () => {
 
           <NavLink to="/properties" className={linkClass} onClick={() => setMenuOpen(false)}>
             Properties
+          </NavLink>
+
+          <NavLink to="/projects" className={linkClass} onClick={() => setMenuOpen(false)}>
+            Projects
           </NavLink>
 
           {user?.role === "user" && (

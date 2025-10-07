@@ -17,6 +17,7 @@ const userSchema = new mongoose.Schema({
   licenseNumber: String,
   experience: String,
   specialization: [String],
+  companyEmail: String,
   photo: {
     type: String, // store base64 string here
     contentType: String, // store MIME type (optional but useful)

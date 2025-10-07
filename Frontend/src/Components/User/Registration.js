@@ -19,6 +19,7 @@ const Registration = () => {
     userType: 'buyer',
     companyName: '',
     licenseNumber: '',
+    companyEmail: '',
     experience: '',
     specialization: []
   });
@@ -119,6 +120,8 @@ const Registration = () => {
     // Professional Information (conditional)
     if (formData.userType === 'developer') {
       if (!formData.companyName.trim()) errors.companyName = 'Company Name is required for developers.';
+
+    if (!formData.companyEmail.trim()) errors.companyEmail = 'Company Email is required for developers.';
       // Add more validation for licenseNumber, experience, specialization if needed
     }
 
@@ -468,6 +471,21 @@ const Registration = () => {
                         ))}
                       </div>
                     </div>
+                    <div>
+                        <label htmlFor="companyEmail" className="block text-sm font-medium text-gray-700">
+                          Company Email
+                        </label>
+                        <input
+                          id="companyEmail"
+                          name="companyEmail"
+                          type="email"
+                          value={formData.companyEmail}
+                          onChange={handleChange}
+                          className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          placeholder="you@example.com"
+                        />
+                      </div>
+                    
                   </div>
                 )}
 
