@@ -8,6 +8,7 @@ import PropertySearchBar from './propertySearchbar';
 import { Plus } from 'lucide-react';
 import API from '../../services/api';
 import { useUser } from '../../Context/userContext';
+import ProjectSearchBar from './projectSearchbar';
 
 const Projects = () => {
   const { user } = useUser();
@@ -120,7 +121,7 @@ const Projects = () => {
       <Navbar />
       <div className="p-4 bg-gradient-to-br from-blue-100 via-white to-green-100 min-h-screen">
         <div className="max-w-7xl mx-auto py-8">
-          <PropertySearchBar onSearch={setFilters} />
+          <ProjectSearchBar onSearch={setFilters} />
 
           {loading && <p className="text-center text-gray-600">Loading projects...</p>}
           {error && <p className="text-center text-red-600">{error}</p>}
@@ -143,7 +144,7 @@ const Projects = () => {
                       ProjectType: project.ProjectType,
                       ProjectStatus: project.ProjectStatus,
                       location: `${project.address?.city}, ${project.address?.state}`,
-                      UnitConfiguration: project.UnitConfiguration,
+                      unitConfigurations: project.unitConfigurations || [],
                       image: project.images?.[0] || 'https://via.placeholder.com/600x400'
                     }}
                     onDelete={() => handleDeleteProject(project._id)}

@@ -18,7 +18,12 @@ const AddProjectModal = ({
     city: '',
     state: '',
     zip: '',
-    UnitConfiguration: '',
+    unitConfigurations: [{
+      type: '',
+      minPrice: '',
+      maxPrice: '',
+      area: ''
+    }],
     description: '',
     ProjectArea: '',
     images: [],
@@ -45,7 +50,12 @@ const AddProjectModal = ({
         city: editProject?.address?.city || '',
         state: editProject?.address?.state || '',
         zip: editProject?.address?.zip || '',
-        UnitConfiguration: editProject?.UnitConfiguration || '',
+        unitConfigurations: editProject?.unitConfigurations || [{
+          type: '',
+          minPrice: '',
+          maxPrice: '',
+          area: ''
+        }],
         description: editProject?.description || '',
         ProjectArea: editProject?.ProjectArea || '',
         images: editProject?.images || [],
@@ -78,7 +88,24 @@ const AddProjectModal = ({
     if (!formData.city.trim()) errors.city = 'City is required.';
     if (!formData.state.trim()) errors.state = 'State is required.';
     if (!formData.zip.trim()) errors.zip = 'ZIP code is required.';
-    if (!formData.UnitConfiguration.trim()) errors.UnitConfiguration = 'Unit Configuration is required.';
+    
+    // Validate unit configurations
+    const configErrors = [];
+    if (formData.unitConfigurations.length === 0) {
+      errors.unitConfigurations = 'At least one unit configuration is required.';
+    } else {
+      formData.unitConfigurations.forEach((config, index) => {
+        const configError = {};
+        if (!config.type.trim()) configError.type = 'Unit type is required.';
+        if (!config.minPrice || parseFloat(config.minPrice) <= 0) configError.minPrice = 'Minimum price must be a positive number.';
+        if (!config.maxPrice || parseFloat(config.maxPrice) <= 0) configError.maxPrice = 'Maximum price must be a positive number.';
+        if (parseFloat(config.maxPrice) <= parseFloat(config.minPrice)) configError.maxPrice = 'Maximum price must be greater than minimum price.';
+        if (!config.area || parseFloat(config.area) <= 0) configError.area = 'Area must be a positive number.';
+        if (Object.keys(configError).length > 0) configErrors[index] = configError;
+      });
+    }
+    if (configErrors.length > 0) errors.unitConfigurations = configErrors;
+    
     if (!formData.description.trim()) errors.description = 'Description is required.';
     if (!formData.ProjectArea || parseFloat(formData.ProjectArea) <= 0) errors.ProjectArea = 'Area must be a positive number.';
     if (!formData.contactName.trim()) errors.contactName = 'Contact Name is required.';
@@ -270,21 +297,149 @@ const AddProjectModal = ({
                 {formErrors.ProjectStatus && <p className="text-red-500 text-xs mt-1">{formErrors.ProjectStatus}</p>}
               </div>
 
-              {/* Unit Configuration */}
-              <div className="col-span-1 md:col-span-2">
-                <label htmlFor="UnitConfiguration" className="block text-sm font-medium text-gray-700 mb-1">
-                  Unit Configuration <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="UnitConfiguration"
-                  name="UnitConfiguration"
-                  value={formData.UnitConfiguration}
-                  onChange={handleChange}
-                  className={`mt-1 block w-full border ${formErrors.UnitConfiguration ? 'border-red-500' : 'border-gray-300'} rounded-lg shadow-sm p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors`}
-                  placeholder="e.g., 2BHK, 3BHK, 4BHK"
-                />
-                {formErrors.UnitConfiguration && <p className="text-red-500 text-xs mt-1">{formErrors.UnitConfiguration}</p>}
+              {/* Unit Configurations */}
+              <div className="col-span-1 md:col-span-2 space-y-4">
+                <div className="flex justify-between items-center">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Unit Configurations <span className="text-red-500">*</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({
+                      ...prev,
+                      unitConfigurations: [
+                        ...prev.unitConfigurations,
+                        { type: '', minPrice: '', maxPrice: '', area: '' }
+                      ]
+                    }))}
+                    className="px-3 py-1 text-sm bg-indigo-50 text-indigo-600 rounded-full hover:bg-indigo-100 transition"
+                  >
+                    + Add Configuration
+                  </button>
+                </div>
+                
+                <div className="space-y-4">
+                  {formData.unitConfigurations.map((config, index) => (
+                    <div key={index} className="p-4 border border-gray-200 rounded-lg space-y-4">
+                      <div className="flex justify-between items-center">
+                        <h4 className="text-sm font-medium text-gray-700">Configuration #{index + 1}</h4>
+                        {index > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => setFormData(prev => ({
+                              ...prev,
+                              unitConfigurations: prev.unitConfigurations.filter((_, i) => i !== index)
+                            }))}
+                            className="p-1 text-red-500 hover:bg-red-50 rounded-full transition"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        )}
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Type */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Type <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            value={config.type}
+                            onChange={(e) => {
+                              const newConfigs = [...formData.unitConfigurations];
+                              newConfigs[index] = { ...config, type: e.target.value };
+                              setFormData(prev => ({ ...prev, unitConfigurations: newConfigs }));
+                            }}
+                            className={`mt-1 block w-full border ${
+                              formErrors.unitConfigurations?.[index]?.type ? 'border-red-500' : 'border-gray-300'
+                            } rounded-lg shadow-sm p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors`}
+                            placeholder="e.g., 2BHK, 3BHK"
+                          />
+                          {formErrors.unitConfigurations?.[index]?.type && (
+                            <p className="text-red-500 text-xs mt-1">{formErrors.unitConfigurations[index].type}</p>
+                          )}
+                        </div>
+                        
+                        {/* Area */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Area (sq ft) <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            value={config.area}
+                            onChange={(e) => {
+                              const newConfigs = [...formData.unitConfigurations];
+                              newConfigs[index] = { ...config, area: e.target.value };
+                              setFormData(prev => ({ ...prev, unitConfigurations: newConfigs }));
+                            }}
+                            className={`mt-1 block w-full border ${
+                              formErrors.unitConfigurations?.[index]?.area ? 'border-red-500' : 'border-gray-300'
+                            } rounded-lg shadow-sm p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors`}
+                            placeholder="1200"
+                            min="0"
+                          />
+                          {formErrors.unitConfigurations?.[index]?.area && (
+                            <p className="text-red-500 text-xs mt-1">{formErrors.unitConfigurations[index].area}</p>
+                          )}
+                        </div>
+                        
+                        {/* Min Price */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Minimum Price <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="number"
+                            value={config.minPrice}
+                            onChange={(e) => {
+                              const newConfigs = [...formData.unitConfigurations];
+                              newConfigs[index] = { ...config, minPrice: e.target.value };
+                              setFormData(prev => ({ ...prev, unitConfigurations: newConfigs }));
+                            }}
+                            className={`mt-1 block w-full border ${
+                              formErrors.unitConfigurations?.[index]?.minPrice ? 'border-red-500' : 'border-gray-300'
+                            } rounded-lg shadow-sm p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors`}
+                            placeholder="5000000"
+                            min="0"
+                          />
+                          {formErrors.unitConfigurations?.[index]?.minPrice && (
+                            <p className="text-red-500 text-xs mt-1">{formErrors.unitConfigurations[index].minPrice}</p>
+                          )}
+                        </div>
+                        
+                        {/* Max Price */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Maximum Price <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="number"
+                            value={config.maxPrice}
+                            onChange={(e) => {
+                              const newConfigs = [...formData.unitConfigurations];
+                              newConfigs[index] = { ...config, maxPrice: e.target.value };
+                              setFormData(prev => ({ ...prev, unitConfigurations: newConfigs }));
+                            }}
+                            className={`mt-1 block w-full border ${
+                              formErrors.unitConfigurations?.[index]?.maxPrice ? 'border-red-500' : 'border-gray-300'
+                            } rounded-lg shadow-sm p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors`}
+                            placeholder="7500000"
+                            min="0"
+                          />
+                          {formErrors.unitConfigurations?.[index]?.maxPrice && (
+                            <p className="text-red-500 text-xs mt-1">{formErrors.unitConfigurations[index].maxPrice}</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                {formErrors.unitConfigurations && !Array.isArray(formErrors.unitConfigurations) && (
+                  <p className="text-red-500 text-xs mt-1">{formErrors.unitConfigurations}</p>
+                )}
               </div>
             </div>
           </div>

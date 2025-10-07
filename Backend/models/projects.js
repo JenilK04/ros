@@ -43,11 +43,34 @@ const projectSchema = new mongoose.Schema({
       trim: true
     }
   },
-  UnitConfiguration: {
-    type: [String],
-    required: [true, 'Unit configuration is required'],
-    trim: true
-  },
+  unitConfigurations: [{
+    type: {
+      type: String,
+      required: [true, 'Unit type is required'],
+      trim: true
+    },
+    area: {
+      type: String,
+      required: [true, 'Unit area is required'],
+      min: [0, 'Area cannot be negative']
+    },
+    minPrice: {
+      type: Number,
+      required: [true, 'Minimum price is required'],
+      min: [0, 'Price cannot be negative']
+    },
+    maxPrice: {
+      type: Number,
+      required: [true, 'Maximum price is required'],
+      min: [0, 'Price cannot be negative'],
+      validate: {
+        validator: function(value) {
+          return value > this.minPrice;
+        },
+        message: 'Maximum price must be greater than minimum price'
+      }
+    }
+  }],
   description: {
     type: String,
     required: [true, 'Description is required'],

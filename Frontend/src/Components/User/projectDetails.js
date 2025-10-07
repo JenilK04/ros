@@ -10,14 +10,11 @@ import {
   Phone,
   Mail,
   ArrowLeft,
-  Edit,
-  Trash2
 } from 'lucide-react';
 
 const ProjectDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useUser();
   
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -40,20 +37,7 @@ const ProjectDetails = () => {
     fetchProject();
   }, [id]);
 
-  const handleDelete = async () => {
-    if (!window.confirm('Are you sure you want to delete this project?')) return;
-
-    try {
-      await API.delete(`/projects/${id}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
-      alert('Project deleted successfully!');
-      navigate('/projects');
-    } catch (err) {
-      console.error('Failed to delete project:', err);
-      alert('Failed to delete project: ' + (err.response?.data?.msg || err.message));
-    }
-  };
+  
 
   if (loading) return (
     <>
@@ -150,8 +134,28 @@ const ProjectDetails = () => {
             </div>
 
             <div className="border-t border-gray-200 pt-6">
-              <h2 className="text-xl font-semibold mb-4">Unit Configuration</h2>
-              <p className="text-gray-600">{project.UnitConfiguration}</p>
+              <h2 className="text-xl font-semibold mb-4">Unit Configurations</h2>
+              <div className="grid grid-cols-1 gap-4">
+                {project.unitConfigurations?.map((config, index) => (
+                  <div key={index} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-800">{config.type}</h3>
+                        <p className="text-sm text-gray-600 mt-1">Area: {config.area} sq ft</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-gray-600">Price Range:</p>
+                        <p className="font-medium text-gray-800">
+                          ₹{(config.minPrice || 0).toLocaleString()} - ₹{(config.maxPrice || 0).toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {(!project.unitConfigurations || project.unitConfigurations.length === 0) && (
+                  <p className="text-gray-600">No unit configurations available</p>
+                )}
+              </div>
             </div>
 
             <div className="border-t border-gray-200 pt-6">
