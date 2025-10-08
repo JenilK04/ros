@@ -8,7 +8,7 @@ import posthog from 'posthog-js';
 import ChatPopup from './chatPopup';
 import {
   MapPin, IndianRupeeIcon, Bed, Bath, Ruler,
-  Building, Home, LandPlot, Trash2,
+  Building, Trash2,
   ArrowLeft, ArrowRight, User, Phone,
   Mail,MessageCircle
 } from 'lucide-react';
