@@ -63,7 +63,7 @@ const PropertyDetails = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, user?._id]);
 
-useEffect(() => {
+  useEffect(() => {
     if (id) {
       posthog.capture("property_view", {
         propertyId: id,
@@ -72,7 +72,27 @@ useEffect(() => {
     }
   }, [id]);
 
+  // Handle keyboard navigation in gallery
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (!isGalleryOpen) return;
+      
+      if (e.key === 'ArrowLeft') {
+        setGalleryImageIndex(prev => 
+          prev === 0 ? property.images.length - 1 : prev - 1
+        );
+      } else if (e.key === 'ArrowRight') {
+        setGalleryImageIndex(prev => 
+          prev === property.images.length - 1 ? 0 : prev + 1
+        );
+      } else if (e.key === 'Escape') {
+        setIsGalleryOpen(false);
+      }
+    };
 
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isGalleryOpen, property?.images?.length]);
   const handleInquiryToggle = async () => {
         try {
             const token = localStorage.getItem('token');
@@ -102,11 +122,46 @@ useEffect(() => {
   const handleUpdateProperty = async (propertyId, updatedPropertyData) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await API.put(`/properties/${propertyId}`, updatedPropertyData, {
-        headers: { Authorization: `Bearer ${token}` },
+      
+      // Format the data properly for the server
+      const formattedData = {
+        ...updatedPropertyData,
+        address: {
+          street: updatedPropertyData.street,
+          city: updatedPropertyData.city,
+          state: updatedPropertyData.state,
+          zip: updatedPropertyData.zip
+        },
+        // Ensure images array is properly handled
+        images: updatedPropertyData.images,
+        // Convert numeric fields
+        price: parseFloat(updatedPropertyData.price),
+        area: parseFloat(updatedPropertyData.area),
+        bedrooms: parseInt(updatedPropertyData.bedrooms),
+        bathrooms: parseFloat(updatedPropertyData.bathrooms)
+      };
+
+      const response = await API.put(`/properties/${propertyId}`, formattedData, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
       });
-      setProperty(response.data.property || { ...property, ...updatedPropertyData });
+      
+      const updatedProperty = response.data.property || { ...property, ...formattedData };
+      
+      // Reset image-related states when new images are added
+      if (updatedProperty.images?.length !== property?.images?.length) {
+        setCurrentImageIndex(0);
+        setGalleryImageIndex(0);
+      }
+      
+      setProperty(updatedProperty);
       setIsModalOpen(false);
+      
+      // Refresh property details to ensure we have the latest data
+      await fetchPropertyDetails();
+      
       alert('Property updated successfully!');
     } catch (err) {
       console.error('Error updating property:', err);
@@ -126,17 +181,7 @@ useEffect(() => {
         alert(err.response?.data?.msg || 'Failed to delete property.');
       }
     }
-  };
-
-  const getPropertyTypeIcon = (type) => {
-    switch (type) {
-      case 'Apartment': return <Building className="h-5 w-5 text-gray-600" />;
-      case 'House': return <Home className="h-5 w-5 text-gray-600" />;
-      case 'Condo': return <Building className="h-5 w-5 text-gray-600" />;
-      case 'Land': return <LandPlot className="h-5 w-5 text-gray-600" />;
-      default: return null;
-    }
-  };
+  }
 
   const getPartialValue = (value) => {
     if (!value) return '';
@@ -173,66 +218,64 @@ useEffect(() => {
   );
 
   return (
-    <div className="py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-100 via-white to-green-100">
-      <div className="max-w-4xl mx-auto bg-white/90 backdrop-blur-sm rounded-xl shadow-2xl overflow-hidden border border-gray-200/50">
-
-        {/* Image Carousel */}
-        <div
-          className="relative h-64 sm:h-80 md:h-96 bg-gray-200 cursor-pointer"
-          onClick={() => { setIsGalleryOpen(true); setGalleryImageIndex(currentImageIndex); }}
+    <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Back Button */}
+        <button
+          onClick={() => navigate('/properties')}
+          className="flex items-center text-gray-600 hover:text-blue-600 mb-6"
         >
-          {property.images?.length > 0 ? (
-            <img
-              src={property.images[currentImageIndex]}
-              alt={`${property.title} ${currentImageIndex + 1}`}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gray-300 text-gray-600 ">
-              No Image Available
+          <ArrowLeft className="h-5 w-5 mr-2" />
+          Back to Properties
+        </button>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Image Gallery */}
+          <div className="space-y-4">
+            <div className="aspect-w-16 aspect-h-9 rounded-lg overflow-hidden">
+              <img
+                src={property.images[currentImageIndex] || 'https://via.placeholder.com/600x400'}
+                alt={property.title}
+                className="object-cover w-full h-full cursor-pointer"
+                onClick={() => { setIsGalleryOpen(true); setGalleryImageIndex(currentImageIndex); }}
+              />
             </div>
-          )}
-          {/* Posted Date Badge */}
-          {property.createdAt && (
-            <span className="absolute top-2 right-2 bg-white bg-opacity-70 text-grey-900 text-xs px-2 py-1 rounded">
-              {new Date(property.createdAt).toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-              })}
-            </span>
-          )}
-          {property.images?.length > 1 && (
-            <>
-              <button
-                onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(prev => prev === 0 ? property.images.length - 1 : prev - 1); }}
-                className="absolute top-1/2 left-2 sm:left-4 -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full z-10 hover:bg-opacity-75"
-              >
-                <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-              </button>
-              <button
-                onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(prev => prev === property.images.length - 1 ? 0 : prev + 1); }}
-                className="absolute top-1/2 right-2 sm:right-4 -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full z-10 hover:bg-opacity-75"
-              >
-                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
-              </button>
-            </>
-          )}
-        </div>
+            {property.images.length > 1 && (
+              <div className="grid grid-cols-4 gap-2">
+                {property.images.map((image, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentImageIndex(index)}
+                    className={`aspect-w-16 aspect-h-9 rounded-lg overflow-hidden ${
+                      index === currentImageIndex ? 'ring-2 ring-blue-500' : ''
+                    }`}
+                  >
+                    <img
+                      src={image}
+                      alt={`${property.title} ${index + 1}`}
+                      className="object-cover w-full h-full"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
         {/* AR Viewer */}
 
-        {/* Content */}
-        <div className="p-4 sm:p-6 md:p-8">
-          {/* Title & Price */}
-          <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-3">
-            <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 break-words">{property.title}</h1>
-            <div className="flex items-center text-green-700 font-bold text-xl md:text-2xl bg-green-100 px-3 py-1 rounded-lg shadow-sm">
-              <IndianRupeeIcon className="h-5 w-5 md:h-6 md:w-6 mr-1" />
-              {parseFloat(property.price).toLocaleString('en-IN')}
-              {property.listingType === 'For Rent' ? <span className="text-base font-normal ml-1">/month</span> : ''}
+          {/* Property Details Column */}
+          <div className="space-y-6">
+            <div className="flex justify-between items-start">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">{property.title}</h1>
+                <div className="flex items-center text-lg text-gray-600 mt-2">
+                  <IndianRupeeIcon className="h-5 w-5 mr-1 text-green-600" />
+                  <span className="font-semibold text-green-600">
+                    {parseFloat(property.price).toLocaleString('en-IN')}
+                    {property.listingType === 'For Rent' ? <span className="text-base font-normal ml-1">/month</span> : ''}
+                  </span>
+                </div>
+              </div>
             </div>
-          </div>
           {property._id && (
             <div className="mb-4">
               <ARViewer propertyId={property._id} />
@@ -258,117 +301,129 @@ useEffect(() => {
             <p className="break-words">{property.address?.street}, {property.address?.city}, {property.address?.state} - {property.address?.zip}</p>
           </div>
 
-          {/* Type */}
-          <div className="flex items-center text-gray-600 text-sm sm:text-base mb-6">
-            {getPropertyTypeIcon(property.propertyType)}
-            <p className="ml-2">{property.propertyType} - {property.listingType}</p>
-          </div>
-
-          {/* Description */}
-          <div className="mb-6">
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2 border-b pb-2">Description</h2>
-            <p className="text-gray-700 whitespace-pre-wrap text-sm sm:text-base">{property.description}</p>
-          </div>
-
-          {/* Property Details */}
-          <div className="mb-6">
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2 border-b pb-2">Property Details</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {isResidential && (
-                <>
-                  <div className="flex items-center text-gray-700">
-                    <Bed className="h-5 w-5 mr-2 text-red-500" />
-                    <span>Bedrooms: <span className="font-medium">{property.bedrooms}</span></span>
-                  </div>
-                  <div className="flex items-center text-gray-700">
-                    <Bath className="h-5 w-5 mr-2 text-teal-500" />
-                    <span>Bathrooms: <span className="font-medium">{property.bathrooms}</span></span>
-                  </div>
-                </>
-              )}
-              <div className="flex items-center text-gray-700">
-                <Ruler className="h-5 w-5 mr-2 text-purple-500" />
-                <span>Area: <span className="font-medium">{property.area} Sq. Ft</span></span>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex items-center text-gray-600">
+                <Building className="h-5 w-5 mr-2" />
+                <span>{property.propertyType} - {property.listingType}</span>
               </div>
-            </div>
-          </div>
-
-          {/* Contact Info */}
-          {(property.contactName || property.contactPhone || property.contactEmail) && (
-            <div className="mb-6">
-              <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2 border-b pb-2">Contact Information</h2>
-              {property.contactName && (
-                <div className="flex items-center text-gray-700 mb-1">
-                  <User className="h-5 w-5 mr-2 text-gray-500" />
-                  <span>{property.contactName}</span>
+              {isResidential && (
+                <div className="flex items-center text-gray-600">
+                  <Bed className="h-5 w-5 mr-2" />
+                  <span>{property.bedrooms} Bedrooms</span>
                 </div>
               )}
-              <div className="flex items-center text-gray-700 mb-1">
-                <Phone className="h-5 w-5 mr-2 text-gray-500" />
-                {showFullContactInfo ? (
-                  <a href={`tel:${property.contactPhone}`} className="hover:underline text-blue-600">{property.contactPhone}</a>
-                ) : (
-                  <span>{getPartialValue(property.contactPhone)}</span>
-                )}
-              </div>
-              <div className="flex items-center text-gray-700 mb-1">
-                <Mail className="h-5 w-5 mr-2 text-gray-500" />
-                {showFullContactInfo ? (
-                  <a href={`mailto:${property.contactEmail}`} className="hover:underline text-blue-600">{property.contactEmail}</a>
-                ) : (
-                  <span>{getPartialValue(property.contactEmail)}</span>
-                )}
+              {isResidential && (
+                <div className="flex items-center text-gray-600">
+                  <Bath className="h-5 w-5 mr-2" />
+                  <span>{property.bathrooms} Bathrooms</span>
+                </div>
+              )}
+              <div className="flex items-center text-gray-600">
+                <Ruler className="h-5 w-5 mr-2" />
+                <span>{property.area} sq ft</span>
               </div>
             </div>
-          )}
 
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6">
-            <button
-              onClick={() => navigate('/properties')}
-              className="w-full sm:w-auto flex-grow bg-gray-200 text-gray-800 py-2 rounded-md hover:bg-gray-300 transition"
-            >
-              Back to Properties
-            </button>
+            <div className="flex items-start text-gray-600">
+              <MapPin className="h-5 w-5 mr-2 mt-1" />
+              <p>
+                {property.address?.street}, {property.address?.city},
+                <br />
+                {property.address?.state} - {property.address?.zip}
+              </p>
+            </div>
 
-            {isOwner && (
-              <>
+            <div className="border-t border-gray-200 pt-6">
+              <h2 className="text-xl font-semibold mb-4">Description</h2>
+              <p className="text-gray-600 whitespace-pre-wrap">{property.description}</p>
+            </div>
+
+            {/* Property Details */}
+            {/* <div className="border-t border-gray-200 pt-6">
+              <h2 className="text-xl font-semibold mb-4">Property Features</h2>
+              <div className="grid grid-cols-2 gap-4">
+                {property.features && property.features.map((feature, index) => (
+                  <div key={index} className="flex items-center text-gray-600">
+                    <span className="mr-2">•</span>
+                    <span>{feature}</span>
+                  </div>
+                ))}
+              </div>
+            </div> */}
+
+            <div className="border-t border-gray-200 pt-6">
+              <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
+              <div className="space-y-3">
+                {property.contactName && (
+                  <div className="flex items-center text-gray-600">
+                    <User className="h-5 w-5 mr-2" />
+                    <span>{showFullContactInfo ? property.contactName : getPartialValue(property.contactName)}</span>
+                  </div>
+                )}
+                <div className="flex items-center text-gray-600">
+                  <Phone className="h-5 w-5 mr-2" />
+                  {showFullContactInfo ? (
+                    <a href={`tel:${property.contactPhone}`} className="text-blue-600 hover:underline">
+                      <span>{property.contactPhone}</span>
+                    </a>
+                  ) : (
+                    <span>{getPartialValue(property.contactPhone)}</span>
+                  )}
+                </div>
+                <div className="flex items-center text-gray-600">
+                  <Mail className="h-5 w-5 mr-2" />
+                  {showFullContactInfo ? (
+                    <a href={`mailto:${property.contactEmail}`} className="text-blue-600 hover:underline">
+                      <span>{property.contactEmail}</span>
+                    </a>
+                  ) : (
+                    <span>{getPartialValue(property.contactEmail)}</span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-wrap gap-4 mt-6 pt-6 border-t border-gray-200">
+              {isOwner && (
+                <>
+                  <button
+                    onClick={() => setIsModalOpen(true)}
+                    className="flex-1 bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Edit Property
+                  </button>
+                  <button
+                    onClick={handleDeleteProperty}
+                    className="flex-1 bg-red-600 text-white py-2 px-6 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Trash2 className="h-5 w-5" />
+                    Delete Property
+                  </button>
+                </>
+              )}
+
+              {!isOwner && !isAdmin && (
                 <button
-                  onClick={() => setIsModalOpen(true)}
-                  className="w-full sm:w-auto flex-grow bg-yellow-600 text-white py-2 rounded-md hover:bg-yellow-700 transition"
+                  onClick={handleInquiryToggle}
+                  className={`flex-1 py-2 px-6 rounded-lg text-white transition-colors ${
+                    inquired ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'
+                  }`}
                 >
-                  Edit Property
+                  {inquired ? 'Remove from Inquiry' : 'Add to Inquiry'}
                 </button>
+              )}
+
+              {isAdmin && !isOwner && (
                 <button
                   onClick={handleDeleteProperty}
-                  className="w-full sm:w-auto flex-grow bg-red-600 text-white py-2 rounded-md hover:bg-red-700 transition flex items-center justify-center gap-2"
+                  className="flex-1 bg-red-600 text-white py-2 px-6 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
                 >
                   <Trash2 className="h-5 w-5" />
                   Delete Property
                 </button>
-              </>
-            )}
-
-            {!isOwner && !isAdmin && (
-              <button
-                onClick={handleInquiryToggle}
-                className={`w-full sm:w-auto flex-grow py-2 rounded-md text-white transition duration-200
-                  ${inquired ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'}`}
-              >
-                {inquired ? 'Remove from Inquiry' : 'Add to Inquiry'}
-              </button>
-            )}
-
-            {isAdmin && !isOwner && (
-              <button
-                onClick={handleDeleteProperty}
-                className="w-full sm:w-auto flex-grow bg-red-600 text-white py-2 rounded-md hover:bg-red-700 transition flex items-center justify-center gap-2"
-              >
-                <Trash2 className="h-5 w-5" />
-                Delete Property
-              </button>
-            )}
-          </div>
+              )}
+            </div>
         </div>
       </div>
 
@@ -385,19 +440,26 @@ useEffect(() => {
 
       {/* Fullscreen Image Gallery */}
       {isGalleryOpen && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center">
-          <button
-            onClick={() => setIsGalleryOpen(false)}
-            className="absolute top-4 right-4 text-white text-4xl font-bold z-50"
-          >
-            &times;
-          </button>
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-90 backdrop-blur-sm flex flex-col items-center justify-center">
+          <div className="absolute top-4 right-4 flex items-center space-x-4">
+            <span className="text-white text-sm">
+              {galleryImageIndex + 1} / {property.images.length}
+            </span>
+            <button
+              onClick={() => setIsGalleryOpen(false)}
+              className="text-white hover:text-gray-300 transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
 
-          <div className="relative max-w-5xl max-h-[90vh] flex items-center justify-center">
+          <div className="relative w-full h-[75vh] flex items-center justify-center">
             <img
               src={property.images[galleryImageIndex]}
               alt={`Gallery ${galleryImageIndex + 1}`}
-              className="max-w-full max-h-[90vh] object-contain"
+              className="max-w-full max-h-full object-contain"
             />
 
             {/* Prev Button */}
@@ -408,7 +470,7 @@ useEffect(() => {
                     prev === 0 ? property.images.length - 1 : prev - 1
                   )
                 }
-                className="absolute left-2 text-white text-3xl p-2 bg-black bg-opacity-30 rounded-full hover:bg-opacity-50"
+                className="absolute left-4 text-white p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors transform hover:scale-105"
               >
                 <ArrowLeft className="w-6 h-6" />
               </button>
@@ -422,11 +484,39 @@ useEffect(() => {
                     prev === property.images.length - 1 ? 0 : prev + 1
                   )
                 }
-                className="absolute right-2 text-white text-3xl p-2 bg-black bg-opacity-30 rounded-full hover:bg-opacity-50"
+                className="absolute right-4 text-white p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors transform hover:scale-105"
               >
                 <ArrowRight className="w-6 h-6" />
               </button>
             )}
+          </div>
+
+          {/* Thumbnails */}
+          <div className="w-full max-w-5xl mt-4 px-4">
+            <div className="flex space-x-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent">
+              {property.images.map((image, index) => (
+                <button
+                  key={index}
+                  onClick={() => setGalleryImageIndex(index)}
+                  className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden transition-all transform ${
+                    index === galleryImageIndex 
+                      ? 'ring-2 ring-blue-500 scale-105' 
+                      : 'opacity-60 hover:opacity-100'
+                  }`}
+                >
+                  <img
+                    src={image}
+                    alt={`Thumbnail ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Keyboard Navigation Hint */}
+          <div className="absolute bottom-4 left-4 text-white/60 text-sm">
+            Use arrow keys for navigation
           </div>
         </div>
       )}

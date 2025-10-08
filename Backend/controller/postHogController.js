@@ -1,6 +1,7 @@
 import axios from 'axios';
 import dotenv from 'dotenv';
 import Property from '../models/Property.js';
+import Project from '../models/projects.js';
 dotenv.config();
 const POSTHOG_API_KEY = process.env.POSTHOG_API_KEY; // use your read-only key here
 
@@ -77,6 +78,7 @@ export const pageViewsAnalytics = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch page views analytics" });
   }
 };
+
 export const getPropertyViewStats = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -139,6 +141,7 @@ export const getPropertyViewStats = async (req, res) => {
   }
 };
 
+
 export const userActivity = async (req, res) => {
   const { userId } = req.params;
   const { date } = req.query; // optional date parameter from frontend
@@ -178,3 +181,65 @@ export const userActivity = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch user page activity" });
   }
 };
+
+export const getProjectViewStats = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { startDate, endDate } = req.query;
+
+    // Fetch projects for this user (developer)
+    const userProjects = await Project.find({ userId }).select('_id ProjectName');
+    if (!userProjects.length) return res.json([]);
+
+    const projectMap = {};
+    const projectIds = userProjects.map((p) => {
+      projectMap[p._id] = p.ProjectName;
+      return p._id.toString();
+    });
+
+    // Fetch project_view events from PostHog
+    const eventsResponse = await axios.get(
+      'https://app.posthog.com/api/projects/225220/events/',
+      {
+        headers: { Authorization: `Bearer ${POSTHOG_API_KEY}` },
+        params: { event: 'project_view', limit: 5000 },
+      }
+    );
+
+    const events = eventsResponse.data.results;
+
+    const counts = {};
+    events.forEach((evt) => {
+      const pageUrl = evt.properties?.$current_url || '';
+      let path = '';
+      try {
+        path = new URL(pageUrl).pathname;
+      } catch {
+        path = pageUrl;
+      }
+
+      // Match project by ID in URL
+      const matchedProject = userProjects.find((p) => path === `/projects/${p._id}`);
+      const viewerId = evt.distinct_id;
+      const eventDate = evt.timestamp.split("T")[0];
+
+      const dateMatch = startDate && endDate ? eventDate >= startDate && eventDate <= endDate : true;
+
+      if (matchedProject && viewerId && viewerId !== userId.toString() && dateMatch) {
+        counts[matchedProject._id] = counts[matchedProject._id] || new Set();
+        counts[matchedProject._id].add(viewerId);
+      }
+    });
+
+    const stats = userProjects.map((p) => ({
+      projectName: projectMap[p._id],
+      views: counts[p._id] ? counts[p._id].size : 0,
+    }));
+
+    res.json(stats);
+  } catch (err) {
+    console.error('Failed to fetch project stats:', err.response?.data || err.message);
+    res.status(500).json({ msg: 'Failed to fetch project stats' });
+  }
+};
+

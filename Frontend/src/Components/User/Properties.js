@@ -146,6 +146,7 @@ const Properties = () => {
                       location: `${property.address?.city}, ${property.address?.state}`,
                       price: `₹${parseFloat(property.price).toLocaleString('en-IN')}`,
                       image: property.images?.[0] || 'https://via.placeholder.com/600x400',
+                      createdAt: property.createdAt,
                     }}
                     onDelete={() => handleDeleteProperty(property._id)}
                     onEdit={() => {
@@ -172,6 +173,8 @@ const Properties = () => {
                       location: `${property.address?.city}, ${property.address?.state}`,
                       price: `₹${parseFloat(property.price).toLocaleString('en-IN')}`,
                       image: property.images?.[0] || 'https://via.placeholder.com/600x400',
+                      createdAt: property.createdAt,
+
                     }}
                     isInquired={property?.inquiredBy?.includes(user?._id)}
                   />

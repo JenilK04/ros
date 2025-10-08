@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useUser } from '../../Context/userContext';
 import API from '../../services/api';
 import Navbar from './navbar';
+import posthog from 'posthog-js';
 import {
   MapPin,
   Building,
@@ -37,7 +37,15 @@ const ProjectDetails = () => {
     fetchProject();
   }, [id]);
 
-  
+  useEffect(() => {
+    if (id) {
+      posthog.capture("project_view", {
+        propertyId: id,
+        $current_url: window.location.pathname,
+      });
+    }
+  }, [id]);
+
 
   if (loading) return (
     <>

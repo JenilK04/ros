@@ -127,6 +127,11 @@ const updateProperty = async (req, res) => {
     property.contactPhone = contactPhone;
     property.contactEmail = contactEmail;
 
+    // Update images if provided
+    if (images && images.length > 0) {
+        property.images = images;
+    }
+
     // ✅ If images changed → regenerate AR
     const savedProperty = await property.save();
     res.json({ msg: 'Property updated successfully', property: savedProperty });

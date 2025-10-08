@@ -3,11 +3,19 @@ import ReactApexChart from "react-apexcharts";
 import API from "../../services/api";
 import DatePicker from "../datePicker";
 import { format } from "date-fns";
+const{useUser} = require("../../Context/userContext");
 
 const PropertyViewsChart = () => {
+  const { user } = useUser();
   const [chartData, setChartData] = useState({ categories: [], series: [] });
   const [dateRange, setDateRange] = useState({ startDate: new Date(), endDate: new Date() });
 
+
+  const [projectChartData, setProjectChartData] = useState([]);
+  const [projectChartOptions, setProjectChartOptions] = useState({
+    chart: { id: "project-bar", toolbar: { show: true } },
+    xaxis: { categories: [] },
+  });
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -35,6 +43,45 @@ const PropertyViewsChart = () => {
     fetchData();
   }, [dateRange]);
 
+  useEffect(() => {
+    const fetchProjectViews = async () => {
+      try {
+        const params = {
+          startDate: dateRange.startDate.toISOString().split("T")[0],
+          endDate: dateRange.endDate.toISOString().split("T")[0],
+        };
+
+        const res = await API.get("analytics/projectviews", { params });
+        const projectData = res.data || [];
+
+        const projectNames = projectData.map((p) => p.projectName);
+        const views = projectData.map((p) => p.views);
+
+        setProjectChartOptions({
+          chart: { id: "project-bar", toolbar: { show: true } },
+          xaxis: { categories: projectNames },
+          tooltip: {
+            y: {
+              formatter: (val) => `${val} unique viewers`,
+            },
+          },
+        });
+
+        setProjectChartData([{ name: "Project Views", data: views }]);
+      } catch (err) {
+        console.error("Failed to fetch project view stats", err);
+        setProjectChartOptions({
+          chart: { id: "project-bar", toolbar: { show: true } },
+          xaxis: { categories: [] },
+        });
+        setProjectChartData([{ name: "Project Views", data: [] }]);
+      }
+    };
+
+    fetchProjectViews();
+  }, [ dateRange]);
+
+
   const options = {
     chart: { type: "bar", toolbar: { show: false } },
     plotOptions: { bar: { borderRadius: 6, horizontal: false } },
@@ -60,7 +107,23 @@ const PropertyViewsChart = () => {
       ) : (
         <p className="text-gray-500">No views yet</p>
       )}
-    </div>
+
+      {user?.userType === "developer" && (
+      <div className="mt-10">
+        <h2 className="text-lg font-semibold mb-2">Project Page Views</h2>
+        {projectChartData.length && projectChartOptions.xaxis.categories.length > 0 ? (
+          <ReactApexChart
+            options={projectChartOptions}
+            series={projectChartData}
+            type="bar"
+            height={350}
+          />
+        ) : (
+          <p className="text-gray-500">No views yet</p>
+        )}
+      </div>
+      )}
+    </div> 
   );
 };
 

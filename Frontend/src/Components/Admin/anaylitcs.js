@@ -105,6 +105,7 @@ const AdminAnalytics = () => {
   const { user } = useUser();
 
   const [allProperties, setAllProperties] = useState([]);
+  const [allProjects, setAllProjects] = useState([]);
 
   // --- Chart States ---
   const [loginChartData, setLoginChartData] = useState([]);
@@ -122,6 +123,12 @@ const AdminAnalytics = () => {
   const [propertyChartData, setPropertyChartData] = useState([]);
   const [propertyChartOptions, setPropertyChartOptions] = useState({
     chart: { id: "property-bar", toolbar: { show: true } },
+    xaxis: { categories: [] },
+  });
+
+  const [projectChartData, setProjectChartData] = useState([]);
+  const [projectChartOptions, setProjectChartOptions] = useState({
+    chart: { id: "project-bar", toolbar: { show: true } },
     xaxis: { categories: [] },
   });
 
@@ -145,7 +152,6 @@ const AdminAnalytics = () => {
     };
     fetchUsers();
   }, []);
-
   // Fetch properties
   useEffect(() => {
     const fetchProperties = async () => {
@@ -157,6 +163,19 @@ const AdminAnalytics = () => {
       }
     };
     fetchProperties();
+  }, []);
+
+  // Fetch projects
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const res = await API.get("/projects");
+        setAllProjects(res.data || []);
+      } catch (err) {
+        console.error("Failed to fetch projects", err);
+      }
+    };
+    fetchProjects();
   }, []);
 
   // --- Fetch Login Analytics ---
@@ -213,7 +232,14 @@ const AdminAnalytics = () => {
           } catch {
             pathname = item.page || "/";
           }
-          return !(pathname.startsWith("/properties/") && pathname !== "/properties");
+
+          // ✅ Exclude property detail pages
+          if (pathname.startsWith("/properties/") && pathname !== "/properties") return false;
+
+          // ✅ Exclude project detail pages
+          if (pathname.startsWith("/projects/") && pathname !== "/projects") return false;
+
+          return true;
         });
 
         const pageCats = filteredPages.map((item) => {
@@ -329,9 +355,101 @@ const AdminAnalytics = () => {
         setPropertyChartData([{ name: "Users per Property", data: [] }]);
       }
     };
-
     fetchPropertyAnalytics();
   }, [user, dateRange, selectedUser, allProperties]);
+
+  useEffect(() => {
+  const fetchProjectAnalytics = async () => {
+    if (user?.role !== "admin") return;
+    if (!allProjects || allProjects.length === 0) return; // wait until projects are fetched
+
+    try {
+      const params = {
+        startDate: format(dateRange.startDate, "yyyy-MM-dd"),
+        endDate: format(dateRange.endDate, "yyyy-MM-dd"),
+      };
+      if (selectedUser !== "all") params.userId = selectedUser;
+
+      const pageRes = await API.get("/analytics/pageviews", { params });
+      const pageData = pageRes.data || [];
+
+      // 1️⃣ Filter only project detail pages (/projects/:id)
+      const projectPages = pageData.filter((item) => {
+        let pathname;
+        try {
+          pathname = new URL(item.page).pathname;
+        } catch {
+          pathname = item.page.startsWith("/") ? item.page : `/${item.page}`;
+        }
+        return pathname.startsWith("/projects/") && pathname.split("/").length > 2;
+      });
+
+      // 2️⃣ Aggregate users per project ID
+      const projectUsersMap = {};
+      projectPages.forEach((item) => {
+        let pathname;
+        try {
+          pathname = new URL(item.page).pathname;
+        } catch {
+          pathname = item.page.startsWith("/") ? item.page : `/${item.page}`;
+        }
+        const parts = pathname.split("/").filter(Boolean);
+        const projectId = parts[1];
+        if (!projectId) return;
+        projectUsersMap[projectId] = (projectUsersMap[projectId] || 0) + (item.users || 0);
+      });
+
+      const projectIds = Object.keys(projectUsersMap);
+
+      // 3️⃣ Safely map IDs to project names and counts
+      const safeProjectNames = projectIds.map((id) => {
+        const proj = allProjects.find((p) => p._id === id);
+        return proj?.name || id; // fallback if name missing
+      });
+      const safeUsersCount = projectIds.map((id) => projectUsersMap[id] || 0);
+
+      // 4️⃣ Set chart data if valid
+      if (safeProjectNames.length === safeUsersCount.length && safeProjectNames.length > 0) {
+        setProjectChartOptions({
+          chart: { id: "project-bar", toolbar: { show: true } },
+          xaxis: { categories: safeProjectNames },
+          tooltip: {
+            custom: ({ series, seriesIndex, dataPointIndex }) => {
+              const projectId = projectIds[dataPointIndex];
+              const proj = allProjects.find((p) => p._id === projectId);
+              if (!proj) return `${projectId}: ${series[seriesIndex][dataPointIndex]}`;
+              return `
+                <div style="padding:5px">
+                  <b>${proj.ProjectName}</b><br/>
+                  Developer: ${proj.DeveloperName || "-"}<br/>
+                  Type: ${proj.ProjectType || "-"}<br/>    
+                  Location: ${proj.address?.street +","+proj.address?.city+","+proj.address?.state  || "-"}, ${proj.address?.state || "-"}<br/>
+                </div>
+              `;
+            },
+          },
+        });
+
+        setProjectChartData([{ name: "Users per Project", data: safeUsersCount }]);
+      } else {
+        setProjectChartOptions({
+          chart: { id: "project-bar", toolbar: { show: true } },
+          xaxis: { categories: [] },
+        });
+        setProjectChartData([{ name: "Users per Project", data: [] }]);
+      }
+    } catch (err) {
+      console.error("Failed to fetch project analytics", err);
+      setProjectChartOptions({
+        chart: { id: "project-bar", toolbar: { show: true } },
+        xaxis: { categories: [] },
+      });
+      setProjectChartData([{ name: "Users per Project", data: [] }]);
+    }
+  };
+
+  fetchProjectAnalytics();
+}, [user, dateRange, selectedUser, allProjects]);
 
   if (user?.role !== "admin") {
     return <p className="text-red-500 font-bold">Access denied. Admins only.</p>;
@@ -373,7 +491,7 @@ const AdminAnalytics = () => {
         </div>
 
         {/* --- Charts --- */}
-        <div className="mb-10">
+        <div className="mb-10 bg-white p-5 rounded-xl shadow">
           <h3 className="text-xl font-semibold mb-2">Logins vs Failed Logins</h3>
           {loginChartData.length && loginChartOptions.xaxis.categories.length > 0 ? (
             <ReactApexChart options={loginChartOptions} series={loginChartData} type="bar" height={350} />
@@ -382,7 +500,7 @@ const AdminAnalytics = () => {
           )}
         </div>
 
-        <div className="mb-10">
+        <div className="mb-10 bg-white p-5 rounded-xl shadow">
           <h3 className="text-xl font-semibold mb-2">Page Views per Page</h3>
           {pageChartData.length && pageChartOptions.xaxis.categories.length > 0 ? (
             <ReactApexChart options={pageChartOptions} series={pageChartData} type="bar" height={350} />
@@ -391,12 +509,26 @@ const AdminAnalytics = () => {
           )}
         </div>
 
-        <div className="mt-10">
+        <div className="mt-10 bg-white p-5 rounded-xl shadow">
           <h3 className="text-xl font-semibold mb-2">Property Pages Views</h3>
           {propertyChartData.length && propertyChartOptions.xaxis.categories.length > 0 ? (
             <ReactApexChart options={propertyChartOptions} series={propertyChartData} type="bar" height={350} />
           ) : (
             <p>No property data available</p>
+          )}
+        </div>
+
+        <div className="mt-10 bg-white p-5 rounded-xl shadow">
+          <h3 className="text-xl font-semibold mb-2">Project Pages Views</h3>
+          {projectChartData.length && projectChartOptions.xaxis.categories.length > 0 ? (
+            <ReactApexChart
+              options={projectChartOptions}
+              series={projectChartData}
+              type="bar"
+              height={350}
+            />
+          ) : (
+            <p className="text-gray-500">No project data available</p>
           )}
         </div>
       </div>

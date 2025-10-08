@@ -5,12 +5,23 @@ import { Link } from 'react-router-dom';
 import { MapPin, CheckCircle2 } from 'lucide-react';
 
 const PropertyCard = ({ property, isInquired }) => {
+    // Format the date (e.g., "Apr 10, 2024")
+    const formattedDate = new Date(property.createdAt).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    });
+
     return (
         <div className="relative group">
-            
+            {/* Date Badge: Display over image on top right corner */}
+            <div className="absolute top-2 right-2 z-20 bg-white/80 text-gray-800 text-xs font-semibold px-2 py-1 rounded shadow">
+                {formattedDate}
+            </div>
+
             {/* Inquired Badge: Renders only if isInquired is true */}
             {isInquired && (
-                <div className="absolute top-2 right-2 z-10 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1 shadow-md">
+                <div className="absolute top-10 right-2 z-10 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1 shadow-md">
                     <CheckCircle2 size={14} />
                     <span>Inquired</span>
                 </div>
@@ -24,11 +35,14 @@ const PropertyCard = ({ property, isInquired }) => {
                 `}
             >
                 <Link to={`/properties/${property.id}`} className="block">
-                    <img
-                        src={property.image}
-                        alt={property.title}
-                        className="w-full h-48 object-cover"
-                    />
+                    <div className="relative">
+                        <img
+                            src={property.image}
+                            alt={property.title}
+                            className="w-full h-48 object-cover"
+                        />
+                        {/* Date badge is already positioned absolutely above */}
+                    </div>
                     <div className="p-4 flex flex-col flex-grow">
                         <h2 className="text-lg font-bold text-gray-800 mb-1 truncate" title={property.title}>
                             {property.title}
