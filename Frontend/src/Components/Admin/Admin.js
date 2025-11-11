@@ -40,11 +40,11 @@ const Admin = () => {
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <div className="bg-white p-5 rounded-xl shadow">
+        <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mb-6">
+          {/* <div className="bg-white p-5 rounded-xl shadow">
             <h2 className="text-lg font-semibold text-gray-700 mb-2">System Activity Overview</h2>
             <p className="text-gray-500 text-sm">Admin analytics/graph placeholders here.</p>
-          </div>
+          </div> */}
 
           <div className="bg-white p-5 rounded-xl shadow">
             <h2 className="text-lg font-semibold text-gray-700 mb-2">Admin Notifications</h2>

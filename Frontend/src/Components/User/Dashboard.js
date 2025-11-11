@@ -3,7 +3,7 @@ import Navbar from './navbar';
 import ActivityOverview from './activityOverviewCard';
 import { useUser } from '../../Context/userContext';
 import Notifications from './notification';
-import { Users, ClipboardCheck, Calendar, NewspaperIcon } from 'lucide-react';
+import { Users, Calendar, NewspaperIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
@@ -33,11 +33,11 @@ const Dashboard = () => {
               onClick={() => navigate('/myleads')}
               color="linear-gradient(135deg, #22D3EE 0%, #3B82F6 100%)" // cyan → blue
             />
-            <Card
+            {/* <Card
               title="Tasks"
               icon={<ClipboardCheck className="h-8 w-8" />}
               color="linear-gradient(135deg, #FACC15 0%, #F97316 100%)" // yellow → orange
-            />
+            /> */}
             <Card
               title="Events"
               icon={<Calendar className="h-8 w-8" />}
