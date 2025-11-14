@@ -2,8 +2,10 @@
 import Property from "../models/Property.js";
 import mongoose from "mongoose";
 import Notification from "../models/notification.js";
+import Admin from "../models/Admin.js";
 import User from "../models/Users.js";
 import {generateARFromProperty} from "../middleware/tripoAI.js";
+import adminNotification from "../models/adminNotification.js";
 
 // ✅ Get property by ID
 // backend/controller/propertiesController.js
@@ -92,6 +94,24 @@ const postProperty = async (req, res) => {
 
     const savedProperty = await newProperty.save();
     res.status(201).json(savedProperty);
+    const user = await User.findById(req.user.id);
+    const admin = await Admin.findOne(); // assuming single admin
+    const message = `${user.firstName + " " + user.lastName} updated property "${newProperty.title}".`;
+
+    const notification = await adminNotification.create({
+      recipientId: admin._id,  // seller
+      senderId: req.user.id,
+      propertyId: newProperty._id,
+      message
+    });
+
+    // Real-time push via Socket.IO
+    if (req.io) {
+      req.io.to(newProperty.userId.toString()).emit("admin-notification", notification);
+    }
+
+    console.log('Property updated:', newProperty._id);
+    res.json({ msg: "property updated & seller notified", property: savedProperty });
 
   } catch (error) {
     console.error('Error adding property:', error);
@@ -134,7 +154,24 @@ const updateProperty = async (req, res) => {
 
     // ✅ If images changed → regenerate AR
     const savedProperty = await property.save();
-    res.json({ msg: 'Property updated successfully', property: savedProperty });
+    const user = await User.findById(req.user.id);
+    const admin = await Admin.findOne(); // assuming single admin
+    const message = `${user.firstName + " " + user.lastName} edited property "${property.title}".`;
+
+    const notification = await adminNotification.create({
+      recipientId: admin._id,  // seller
+      senderId: req.user.id,
+      propertyId: property._id,
+      message
+    });
+
+    // Real-time push via Socket.IO
+    if (req.io) {
+      req.io.to(property.userId.toString()).emit("admin-notification", notification);
+    }
+
+    console.log('Property updated:', property._id);
+    res.json({ msg: "property updated & seller notified", property: savedProperty });
   } catch (err) {
     console.error('Error updating property:', err);
     res.status(500).json({ msg: 'Server error', error: err.message });
@@ -153,6 +190,24 @@ const deleteProperty = async (req, res) => {
 
     await property.deleteOne();
     res.status(200).json({ msg: 'Property deleted successfully' });
+    const user = await User.findById(req.user.id);
+    const admin = await Admin.findOne(); // assuming single admin
+    const message = `${user.firstName + " " + user.lastName} deleted property "${property.title}".`;
+
+    const notification = await adminNotification.create({
+      recipientId: admin._id,  // seller
+      senderId: req.user.id,
+      propertyId: property._id,
+      message
+    });
+
+    // Real-time push via Socket.IO
+    if (req.io) {
+      req.io.to(property.userId.toString()).emit("admin-notification", notification);
+    }
+
+    console.log('Property updated:', property._id);
+    res.json({ msg: "property updated & seller notified", property: property });
   } catch (err) {
     console.error('Delete Property Error:', err);
     res.status(500).json({ msg: 'Server error', error: err.message });

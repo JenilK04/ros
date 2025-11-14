@@ -2,10 +2,13 @@ import React from 'react';
 import Navbar from '../User/navbar';
 import { BarChart2, UserCog, Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import Notifications from './adminNotification';
+import { useUser } from '../../Context/userContext';
 
 const Admin = () => {
   const adminName = 'Admin';
   const navigate = useNavigate();
+  const { user} = useUser();
 
   return (
     <>
@@ -48,7 +51,9 @@ const Admin = () => {
 
           <div className="bg-white p-5 rounded-xl shadow">
             <h2 className="text-lg font-semibold text-gray-700 mb-2">Admin Notifications</h2>
-            <p className="text-gray-500 text-sm">No new alerts.</p>
+            <div className="mt-2 bg-white overflow-y-auto">
+              <Notifications userId={user._id} />
+            </div>
           </div>
         </div>
       </div>

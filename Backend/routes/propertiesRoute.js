@@ -17,5 +17,4 @@ router.post("/:id/generate-ar", generateAR);
 router.get("/:id/ar-progress", getARProgress);
 router.get("/:id/download-ar", downloadAR);
 
-
-export default router;
+export default router; 

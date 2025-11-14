@@ -2,11 +2,23 @@ import Notification from "../models/notification.js";
 import Message from "../models/message.js";
 import Property from "../models/Property.js";
 import User from "../models/Users.js";
+import adminNotification from "../models/adminNotification.js";
 
 // GET /notifications
 export const getNotifications = async (req, res) => {
   try {
     const notifications = await Notification.find({
+      recipientId: req.user.id
+    }).sort({ createdAt: -1 });
+    res.json(notifications);
+  } catch (err) {
+    res.status(500).json({ msg: "Server error", error: err.message });
+  }
+};
+
+export const getAdminNotifications = async (req, res) => {
+  try {
+    const notifications = await adminNotification.find({
       recipientId: req.user.id
     }).sort({ createdAt: -1 });
     res.json(notifications);
