@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import API from '../../services/api';
 import Navbar from './navbar';
 import posthog from 'posthog-js';
+import axios from 'axios';
 import {
   MapPin,
   Building,
@@ -11,6 +12,7 @@ import {
   Mail,
   ArrowLeft,
 } from 'lucide-react';
+import LeafletMap from './leafletmap';
 
 const ProjectDetails = () => {
   const { id } = useParams();
@@ -20,6 +22,9 @@ const ProjectDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeImage, setActiveImage] = useState(0);
+  const [mapLoading, setMapLoading] = useState(false);
+  const [coords, setCoords] = useState(null); 
+  
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -36,6 +41,55 @@ const ProjectDetails = () => {
 
     fetchProject();
   }, [id]);
+
+   useEffect(() => {
+  const getCoordinates = async () => {
+    if (!project?.address) return;
+
+    const street = project.address.street || "";
+    const city = project.address.city || "";
+    const state = project.address.state || "";
+    const zip = project.address.zip || "";
+
+    const fullAddress = `${street}, ${city}, ${state}, ${zip}`.trim();
+    if (!fullAddress) return;
+
+    try {
+      setMapLoading(true);
+
+      const res = await axios.get(
+        `https://nominatim.openstreetmap.org/search`,
+        {
+          params: {
+            q: fullAddress,
+            format: "json",
+            limit: 1,
+          },
+          headers: {
+            "Accept-Language": "en",
+          },
+        }
+      );
+
+      if (res.data && res.data.length > 0) {
+        setCoords({
+          lat: parseFloat(res.data[0].lat),
+          lng: parseFloat(res.data[0].lon),
+        });
+      } else {
+        setCoords(null);
+      }
+    } catch (err) {
+      console.log("Nominatim error:", err);
+      setCoords(null);
+    } finally {
+      setMapLoading(false);
+    }
+  };
+
+  getCoordinates();
+}, [project]);
+
 
   useEffect(() => {
     if (id) {
@@ -139,6 +193,42 @@ const ProjectDetails = () => {
                 <br />
                 {project.address.state} - {project.address.zip}
               </p>
+            </div>
+
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <div className="p-3 border-b bg-gray-50">
+                <h2 className="text-lg font-semibold text-gray-800">Location Map</h2>
+                <p className="text-sm text-gray-600">
+                  Showing map based on property address (FREE OpenStreetMap)
+                </p>
+              </div>
+
+              <div className="p-3">
+                {mapLoading && (
+                  <p className="text-sm text-gray-600">Loading location on map...</p>
+                )}
+
+                {!mapLoading && coords && (
+                  <LeafletMap lat={coords.lat} lng={coords.lng} title={project.title} />
+                )}
+
+                {!mapLoading && !coords && (
+                  <p className="text-sm text-red-500">
+                    Location not found for this address.
+                  </p>
+                )}
+
+                {coords && (
+                  <a
+                    className="inline-block mt-3 text-blue-600 hover:underline text-sm"
+                    href={`https://www.google.com/maps/search/?api=1&query=${coords.lat},${coords.lng}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Open in Google Maps
+                  </a>
+                )}
+              </div>
             </div>
 
             <div className="border-t border-gray-200 pt-6">

@@ -6,6 +6,8 @@ import reportWebVitals from './reportWebVitals';
 import { PostHogProvider } from 'posthog-js/react';
 // import { AuthProvider } from './Context/authContext'; 
 import { UserProvider } from './Context/userContext';
+import "leaflet/dist/leaflet.css";
+
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

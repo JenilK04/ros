@@ -6,6 +6,8 @@ import ARViewer from './ARviewer';
 import ARModelViewer from './ArModelViewer';
 import posthog from 'posthog-js';
 import ChatPopup from './chatPopup';
+import axios from 'axios';
+import LeafletMap from './leafletmap';
 import {
   MapPin, IndianRupeeIcon, Bed, Bath, Ruler,
   Building, Trash2,
@@ -27,6 +29,8 @@ const PropertyDetails = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showARViewer, setShowARViewer] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [mapLoading, setMapLoading] = useState(false);
+  const [coords, setCoords] = useState(null); 
 
 
   // Fullscreen Gallery
@@ -93,6 +97,8 @@ const PropertyDetails = () => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isGalleryOpen, property?.images?.length]);
+
+ 
   const handleInquiryToggle = async () => {
         try {
             const token = localStorage.getItem('token');
@@ -332,6 +338,43 @@ const PropertyDetails = () => {
                 {property.address?.state} - {property.address?.zip}
               </p>
             </div>
+
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <div className="p-3 border-b bg-gray-50">
+                <h2 className="text-lg font-semibold text-gray-800">Location Map</h2>
+                <p className="text-sm text-gray-600">
+                  Showing map based on property address (FREE OpenStreetMap)
+                </p>
+              </div>
+
+              <div className="p-3">
+                {mapLoading && (
+                  <p className="text-sm text-gray-600">Loading location on map...</p>
+                )}
+
+                {!mapLoading && coords && (
+                  <LeafletMap lat={coords.lat} lng={coords.lng} title={property.title} />
+                )}
+
+                {!mapLoading && !coords && (
+                  <p className="text-sm text-red-500">
+                    Location not found for this address.
+                  </p>
+                )}
+
+                {coords && (
+                  <a
+                    className="inline-block mt-3 text-blue-600 hover:underline text-sm"
+                    href={`https://www.google.com/maps/search/?api=1&query=${coords.lat},${coords.lng}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Open in Google Maps
+                  </a>
+                )}
+              </div>
+            </div>
+
 
             <div className="border-t border-gray-200 pt-6">
               <h2 className="text-xl font-semibold mb-4">Description</h2>
