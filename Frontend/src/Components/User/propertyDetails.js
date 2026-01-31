@@ -6,7 +6,6 @@ import ARViewer from './ARviewer';
 import ARModelViewer from './ArModelViewer';
 import posthog from 'posthog-js';
 import ChatPopup from './chatPopup';
-import axios from 'axios';
 import LeafletMap from './leafletmap';
 import {
   MapPin, IndianRupeeIcon, Bed, Bath, Ruler,
